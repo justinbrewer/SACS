@@ -10,11 +10,11 @@ main:
 	lw $t2, B
 	lw $t3, C
 
-	mul $t0, $t0, $t4  # Y = X^2
-	mul $t1, $t4, $t4  # Y = AY
-	mul $t0, $t2, $t5  # Z = BX
-	add $t4, $t5, $t4  # Y = Y+Z
-	add $t3, $t4, $t4  # Y = Y+C (Y = AX^2 + BX + C)
+	mul $t4, $t0, $t0  # Y = X^2
+	mul $t4, $t1, $t4  # Y = AY
+	mul $t5, $t2, $t0  # Z = BX
+	add $t4, $t4, $t5  # Y = Y+Z
+	add $t4, $t4, $t3  # Y = Y+C (Y = AX^2 + BX + C)
 
 	la $a0, ans        # print a string
 	li $v0, 4
