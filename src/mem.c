@@ -14,6 +14,8 @@ typedef struct {
   uint8_t* mem;
 } MemoryNode;
 
+typedpef enum { INSUFFICIENT_SPACE=1 } AllocError;
+
 MemoryNode* _create_node(uint32_t size, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
@@ -62,6 +64,7 @@ int _delete_node(MemoryNode* node){
 }
 
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
+  uint32_t res;
   switch(node->status){
   case FREE:
     if(node->size == size){
@@ -71,13 +74,29 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
     }else{
       node->state = SPLIT;
       node->left = _create_node(node->size-1,node);
-      return _dyn_alloc(node->left,size-1);
+      return _dyn_alloc(node->left,size);
     }
-    break;
+
   case SPLIT:
-    break;
+    if(node->left == 0){
+      node->left = _create_node(node->size-1,node);
+      return _dyn_alloc(node->left,size);
+    }else{
+      res = _dyn_alloc(node->left,size);
+      if(res == INSUFFICIENT_SPACE){
+	if(node->right == 0){
+	  node->right = _create_node(node->size-1,node);
+	  return _dyn_alloc(node->right,size);
+	}else{
+	  return _dyn_alloc(node->right,size);
+	}      
+      }else{
+	return res;
+      }
+    }
+
   case FULL:
-    break;
+    return INSUFFICIENT_SPACE;
   }
   return 0;
 }
