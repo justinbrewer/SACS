@@ -31,7 +31,11 @@ int mem_cleanup(){
 }
 
 uint32_t mem_dynamic_alloc(uint32_t size){
-  return _dyn_alloc(root,size);
+  for(uint32_t bit_size=0; size != 0; bit_size++, size >>= 1); //TESTME
+  if(bit_size == 0){
+    return 0;
+  }
+  return _dyn_alloc(root,bit_size);
 }
 
 int mem_static_alloc(uint32_t size, uint32_t loc){}
