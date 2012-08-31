@@ -64,6 +64,15 @@ int _delete_node(MemoryNode* node){
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
   switch(node->status){
   case FREE:
+    if(node->size == size){
+      node->status = FULL;
+      node->mem = malloc(1 << (size-1));
+      return node->mem;
+    }else{
+      node->state = SPLIT;
+      node->left = _create_node(node->size-1,node);
+      return _dyn_alloc(node->left,size-1);
+    }
     break;
   case SPLIT:
     break;
