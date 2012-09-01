@@ -21,6 +21,7 @@ typedef enum { INSUFFICIENT_SPACE=1 } AllocError;
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
+uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc);
 
 MemoryNode* root;
 
@@ -102,6 +103,18 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
 
   case FULL:
     return INSUFFICIENT_SPACE;
+  }
+  return 0;
+}
+
+uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc){
+  switch(node->state){
+  case FULL:
+    break;
+  case SPLIT:
+    break;
+  case FULL:
+    break;
   }
   return 0;
 }
