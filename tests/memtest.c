@@ -15,6 +15,9 @@ int main(void){
   uint32_t result = mem_read32(loc);
   printf("Read %d\n",result);
 
+  printf("Freeing\n");
+  mem_free(loc);
+
   printf("Cleaning up\n");
   mem_cleanup();
 
