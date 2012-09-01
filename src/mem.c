@@ -16,7 +16,7 @@ typedef struct {
   uint8_t* mem;
 } MemoryNode;
 
-typedpef enum { INSUFFICIENT_SPACE=1 } AllocError;
+typedef enum { INSUFFICIENT_SPACE=1 } AllocError;
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
