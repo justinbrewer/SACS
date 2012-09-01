@@ -1,5 +1,7 @@
 #include "mem.h"
 
+#define MINIMUM_SIZE 8
+
 typedef enum { FREE=0, SPLIT, FULL } NodeState;
 
 typedef struct {
@@ -68,7 +70,7 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
   uint32_t res;
   switch(node->status){
   case FREE:
-    if(node->size == size){
+    if(node->size == size || node->size == MINIMUM_SIZE){
       node->status = FULL;
       node->mem = malloc(1 << (size-1));
       return node->loc;
