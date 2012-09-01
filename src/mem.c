@@ -79,6 +79,30 @@ void* mem_translate_addr(uint32_t loc){
   }
 }
 
+uint8_t mem_read8(uint32_t loc){
+  return *((uint8_t*)mem_translate_addr(loc));
+}
+
+uint16_t mem_read16(uint32_t loc){
+  return *((uint16_t*)mem_translate_addr(loc));
+}
+
+uint32_t mem_read32(uint32_t loc){
+  return *((uint32_t*)mem_translate_addr(loc));
+}
+
+uint8_t mem_write8(uint32_t loc, uint8_t data){
+  return *((uint8_t)mem_translate_addr(loc)) = data;
+}
+
+int mem_write16(uint32_t loc, uint16_t data){
+  return *((uint16_t)mem_translate_addr(loc)) = data;
+}
+
+int mem_write32(uint32_t loc, uint32_t data){
+  return *((uint32_t)mem_translate_addr(loc)) = data;
+}
+
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
   MemoryNode* node = (MemoryNode*)malloc(sizeof(MemoryNode));
   memset(node,0,sizeof(MemoryNode));
