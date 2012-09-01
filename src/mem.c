@@ -43,6 +43,7 @@ uint32_t mem_dynamic_alloc(uint32_t size){
 }
 
 int mem_static_alloc(uint32_t size, uint32_t loc){}
+int mem_free(uint32_t loc){}
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
   MemoryNode* node = (MemoryNode*)malloc(sizeof(MemoryNode));
