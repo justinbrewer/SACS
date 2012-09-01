@@ -69,6 +69,16 @@ int mem_free(uint32_t loc){
   return _collapse_node(node->parent);
 }
 
+void* mem_translate_addr(uint32_t loc){
+  MemoryNode* node = _get_node(loc);
+  if(node != 0 && node->state == FULL){
+    uint32_t offset = loc - node->loc;
+    return node->mem + offset;
+  }else{
+    return 0;
+  }
+}
+
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
   MemoryNode* node = (MemoryNode*)malloc(sizeof(MemoryNode));
   memset(node,0,sizeof(MemoryNode));
