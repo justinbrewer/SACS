@@ -2,7 +2,7 @@
 
 #define MINIMUM_SIZE 8
 
-typedef enum { FREE=0, SPLIT, FULL } NodeState;
+typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } NodeState;
 
 typedef struct {
   NodeState state;
@@ -27,6 +27,17 @@ MemoryNode* root;
 
 int mem_init(){
   root = _create_node(32,0);
+  root->state = SPLIT;
+
+  root->left = _create_node(31,0,root);
+  root->left->state = SPLIT;
+  root->left->left = _create_node(30,0,root->left);
+  root->left->left->state = LOCKED;
+
+  root->right = _create_node(31,1<<31,root);
+  root->right->state = SPLIT;
+  root->right->right = _create_node(30,3<<30,root->right);
+  root->right->right->state = STACK;
   return 0;
 }
 
