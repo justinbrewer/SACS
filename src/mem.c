@@ -1,5 +1,8 @@
 #include "mem.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #define MINIMUM_SIZE 8
 
 typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } NodeState;
@@ -92,19 +95,19 @@ uint32_t mem_read32(uint32_t loc){
 }
 
 uint8_t mem_write8(uint32_t loc, uint8_t data){
-  return *((uint8_t)mem_translate_addr(loc)) = data;
+  return *((uint8_t*)mem_translate_addr(loc)) = data;
 }
 
-int mem_write16(uint32_t loc, uint16_t data){
-  return *((uint16_t)mem_translate_addr(loc)) = data;
+uint16_t mem_write16(uint32_t loc, uint16_t data){
+  return *((uint16_t*)mem_translate_addr(loc)) = data;
 }
 
-int mem_write32(uint32_t loc, uint32_t data){
-  return *((uint32_t)mem_translate_addr(loc)) = data;
+uint32_t mem_write32(uint32_t loc, uint32_t data){
+  return *((uint32_t*)mem_translate_addr(loc)) = data;
 }
 
 struct MemoryNode* _create_node(uint32_t size, uint32_t loc, struct MemoryNode* parent){
-  struct MemoryNode* node = (MemoryNode*)malloc(sizeof(struct MemoryNode));
+  struct MemoryNode* node = (struct MemoryNode*)malloc(sizeof(struct MemoryNode));
   memset(node,0,sizeof(struct MemoryNode));
   node->size = size;
   node->loc = loc;
