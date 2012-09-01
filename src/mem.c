@@ -22,6 +22,7 @@ MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
 MemoryNode* _get_node(uint32_t loc);
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
+int _collapse_node(MemoryNode* node);
 
 MemoryNode* root;
 
@@ -56,7 +57,17 @@ uint32_t mem_dynamic_alloc(uint32_t size){
   return _dyn_alloc(root,bit_size);
 }
 
-int mem_free(uint32_t loc){}
+int mem_free(uint32_t loc){
+  MemoryNode* node = _get_node(loc);
+  if(node->loc != loc){
+    return -1;
+  }
+  if(node->state == LOCKED || node->state == STACK){
+    return -2;
+  }
+  node->state = FREE;
+  return _collapse_node(node->parent);
+}
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
   MemoryNode* node = (MemoryNode*)malloc(sizeof(MemoryNode));
@@ -100,6 +111,7 @@ MemoryNode* __get_node(MemoryNode* node, uint32_t loc){
     }
   case FULL:
     return node;
+  }
 }
 
 MemoryNode* _get_node(uint32_t loc){
@@ -140,6 +152,22 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
 
   case FULL:
     return INSUFFICIENT_SPACE;
+  }
+  return 0;
+}
+
+int _collapse_node(MemoryNode* node){
+  if(node->left != 0 && node->left->state == FREE){
+    _delete_node(node->left);
+    node->left = 0;
+  }
+  if(node->right != 0 && node->right->state == FREE){
+    _delete_node(node->right);
+    node->right = 0;
+  }
+  if(node->left == 0 && node->right == 0){
+    node->state = FREE;
+    return _collapse_node(node->parent);
   }
   return 0;
 }
