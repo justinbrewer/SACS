@@ -43,7 +43,7 @@ uint32_t mem_dynamic_alloc(uint32_t size){
   return _dyn_alloc(root,bit_size);
 }
 
-int mem_static_alloc(uint32_t size, uint32_t loc){}
+uint32_t mem_static_alloc(uint32_t size, uint32_t loc){}
 int mem_free(uint32_t loc){}
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
