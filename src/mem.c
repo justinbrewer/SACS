@@ -25,7 +25,7 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
 
 MemoryNode* root;
 
-int mem_init(){
+int mem_init(void){
   root = _create_node(32,0);
   root->state = SPLIT;
 
@@ -41,8 +41,9 @@ int mem_init(){
   return 0;
 }
 
-int mem_cleanup(){
-  //No cleanup should really be necessary
+int mem_cleanup(void){
+  _delete_node(root);
+  root = 0;
   return 0;
 }
 
@@ -111,7 +112,7 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
   case FREE:
     if(node->size == size || node->size == MINIMUM_SIZE){
       node->state = FULL;
-      node->mem = malloc(1 << (size-1));
+      node->mem = malloc(1 << size);
       return node->loc;
     }else{
       node->state = SPLIT;
@@ -142,4 +143,3 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
   }
   return 0;
 }
-

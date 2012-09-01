@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
 
-int mem_init();
-int mem_cleanup();
+int mem_init(void);
+int mem_cleanup(void);
 
 uint32_t mem_dynamic_alloc(uint32_t size);
 int mem_free(uint32_t loc);
