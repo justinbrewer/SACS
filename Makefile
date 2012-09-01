@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -c -I./src -O0
+CFLAGS = -c -I./src -O0 -g
 LL = gcc
 LFLAGS = 
 
