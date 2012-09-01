@@ -188,6 +188,8 @@ uint32_t _dyn_alloc(struct MemoryNode* node, uint32_t size){
       }
     }
 
+  case LOCKED:
+  case STACK:
   case FULL:
     return INSUFFICIENT_SPACE;
   }
