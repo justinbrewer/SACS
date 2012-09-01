@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ROOT_SIZE 32
 #define MINIMUM_SIZE 8
 
 typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } NodeState;
@@ -30,17 +31,17 @@ int _collapse_node(struct MemoryNode* node);
 struct MemoryNode* root;
 
 int mem_init(void){
-  root = _create_node(32,0,0);
+  root = _create_node(ROOT_SIZE,0,0);
   root->state = SPLIT;
 
-  root->left = _create_node(31,0,root);
+  root->left = _create_node(ROOT_SIZE-1,0,root);
   root->left->state = SPLIT;
-  root->left->left = _create_node(30,0,root->left);
+  root->left->left = _create_node(ROOT_SIZE-2,0,root->left);
   root->left->left->state = LOCKED;
 
-  root->right = _create_node(31,1<<31,root);
+  root->right = _create_node(ROOT_SIZE,1<<(ROOT_SIZE-1),root);
   root->right->state = SPLIT;
-  root->right->right = _create_node(30,3<<30,root->right);
+  root->right->right = _create_node(ROOT_SIZE-2,3<<(ROOT_SIZE-2),root->right);
   root->right->right->state = STACK;
   return 0;
 }
