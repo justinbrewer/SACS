@@ -20,6 +20,7 @@ typedef enum { INSUFFICIENT_SPACE=1 } AllocError;
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
+MemoryNode* _get_node(uint32_t loc);
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
 uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc);
 
@@ -67,6 +68,32 @@ int _delete_node(MemoryNode* node){
     free(node->mem);
   }
   free(node);
+}
+
+MemoryNode* __get_node(MemoryNode* node, uint32_t loc){
+  switch(node->state){
+  case FREE:
+    return node;
+  case SPLIT:
+    if(loc < node->loc+(1<<(node->size-1))){
+      if(node->left != 0){
+	return __get_node(node->left,loc);
+      }else{
+	return 0;//FIXME
+      }
+    }else{
+      if(node->right != 0){
+	return __get_node(node->right,loc);
+      }else{
+	return 0;//FIXME
+      }
+    }
+  case FULL:
+    return node;
+}
+
+MemoryNode* _get_node(uint32_t loc){
+  return __get_node(root,loc);
 }
 
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
