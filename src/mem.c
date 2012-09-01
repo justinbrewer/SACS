@@ -22,7 +22,7 @@ MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent);
 int _delete_node(MemoryNode* node);
 MemoryNode* _get_node(uint32_t loc);
 uint32_t _dyn_alloc(MemoryNode* node, uint32_t size);
-uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc);
+//uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc);
 
 MemoryNode* root;
 
@@ -45,7 +45,15 @@ uint32_t mem_dynamic_alloc(uint32_t size){
   return _dyn_alloc(root,bit_size);
 }
 
-uint32_t mem_static_alloc(uint32_t size, uint32_t loc){}
+/*uint32_t mem_static_alloc(uint32_t size, uint32_t loc){
+  uint32_t bit_size = size&(size-1) == 0 ? -1 : 0;
+  for(; size != 0; bit_size++, size >>= 1);
+  if(bit_size == 0){
+    return 0;
+  }
+  return _static_alloc(_get_node(loc),size,loc);
+}*/
+
 int mem_free(uint32_t loc){}
 
 MemoryNode* _create_node(uint32_t size, uint32_t loc, MemoryNode* parent){
@@ -134,14 +142,25 @@ uint32_t _dyn_alloc(MemoryNode* node, uint32_t size){
   return 0;
 }
 
-uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc){
+/*uint32_t _static_alloc(MemoryNode* node, uint32_t size, uint32_t loc){
   switch(node->state){
-  case FULL:
-    break;
+  case FREE:
+    if(node->size == size || node->size == MINIMUM_SIZE){
+      node->state = FULL;
+      node->mem = malloc(1 << (size-1));
+      return node->loc;
+    }else{
+      node->state = SPLIT;
+      node->left = _create_node(node->size-1,node->loc,node);
+      return _dyn_alloc(node->left,size);
+    }
   case SPLIT:
-    break;
+    if(size < node->size){
+    }else{
+      return INUFFICIENT_SPACE;
+    }
   case FULL:
     break;
   }
   return 0;
-}
+  }*/
