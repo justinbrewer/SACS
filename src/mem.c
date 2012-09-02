@@ -53,7 +53,7 @@ int mem_cleanup(void){
 }
 
 uint32_t mem_dynamic_alloc(uint32_t size){
-  uint32_t bit_size = size&(size-1) == 0 ? -1 : 0;
+  uint32_t bit_size = !(size & (size-1)) ? -1 : 0;
   for(; size != 0; bit_size++, size >>= 1);
   if(bit_size == 0){
     return 0;
