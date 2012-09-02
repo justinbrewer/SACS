@@ -39,7 +39,7 @@ int mem_init(void){
   root->left->left = _create_node(ROOT_SIZE-2,0,root->left);
   root->left->left->state = LOCKED;
 
-  root->right = _create_node(ROOT_SIZE,1<<(ROOT_SIZE-1),root);
+  root->right = _create_node(ROOT_SIZE-1,1<<(ROOT_SIZE-1),root);
   root->right->state = SPLIT;
   root->right->right = _create_node(ROOT_SIZE-2,3<<(ROOT_SIZE-2),root->right);
   root->right->right->state = STACK;
