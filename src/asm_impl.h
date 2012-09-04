@@ -23,10 +23,10 @@ struct asm_instr {
 struct asm_binary* _create_binary();
 int _delete_binary(struct asm_binary* bin);
 
-struct asm_instr* _create_instr();
+struct asm_instr* _create_instr(uint8_t max_argc);
 int _delete_instr(struct asm_instr* instr);
 
-struct asm_arg* _create_arg(uint8_t max_argc);
+struct asm_arg* _create_arg();
 int _delete_arg(struct asm_arg* arg);
 
 struct asm_instr* asm_decode_instr(char* instr, int argc, char** argv);

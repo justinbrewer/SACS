@@ -28,8 +28,25 @@ int _delete_binary(struct asm_binary* bin){
   free(bin);
 }
 
-struct asm_instr* _create_instr(){}
-int _delete_instr(struct asm_instr* instr){}
+struct asm_instr* _create_instr(uint8_t max_argc){
+  struct asm_instr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
+  memset(instr,0,sizeof(struct asm_instr));
+  instr->argv = (struct asm_arg*)malloc(max_argc*sizeof(struct asm_arg));
+  return instr;
+}
 
-struct asm_arg* _create_arg(uint8_t max_argc0){}
+int _delete_instr(struct asm_instr* instr){
+  if(instr->argc != 0){
+    for(int i=0; i < instr->argc; i++){
+      _delete_arg(instr->argv[i]);
+    }
+  }
+  if(instr->argv != 0){
+    free(instr->argv);
+  }
+  free(instr);
+  return 0;
+}
+
+struct asm_arg* _create_arg(){}
 int _delete_arg(struct asm_arg* arg){}
