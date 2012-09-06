@@ -12,7 +12,7 @@ int asm_init(){return 0;}
 int asm_cleanup(){return 0;}
 
 struct asm_binary* asm_parse_file(const char* file){
-  int i, toklen, argc;
+  int i, j, toklen, argc;
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
   char* token, operator;
 
@@ -22,7 +22,7 @@ struct asm_binary* asm_parse_file(const char* file){
   uint32_t loc = 0, text_segment, data_segment;
   struct asm_label label;
   struct list* label_list = create_list(16,sizeof(struct asm_label));
-  struct asm_entry entry;
+  struct asm_entry entry, *entryptr;
   struct list* entry_list = create_list(256,sizeof(struct asm_entry));
   struct asm_instr* instr;
 
@@ -79,6 +79,18 @@ struct asm_binary* asm_parse_file(const char* file){
 	loc += entry.size;
       }
       token = strtok(NULL," \t\n\v\f\r");
+    }
+  }
+
+  for(i=0;i<entry_list->size;i++){
+    entryptr = (struct asm_entry*)list_get(entry_list,i);
+    if(entryptr->type == INSTR){
+      instr = &entryptr->entry.instr;
+      for(j=0;j<instr->argc;i++){
+	if(instr->argv[j].type == REFERENCE){
+	  //TODO: Resolve reference
+	}
+      }
     }
   }
 }
