@@ -115,11 +115,23 @@ struct asm_binary* asm_parse_file(const char* file){
   bin->data_segment = data_segment;
   bin->binary = (uint8_t*)malloc(bin->size);
 
-  for(i=0,loc=0;i<entry_list->ptr;i++){
+  uint8_t* ptr = bin->binary;
+  for(i=0;i<entry_list->ptr;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
-    assert(entryptr->loc == loc);
-    memcpy(bin->binary+loc,&entryptr->data,entryptr->size);
-    loc += entryptr->size;
+    assert(entryptr->loc == ptr - bin->binary);
+    switch(entryptr->type){
+    case INSTR:
+      *ptr++ = entryptr->instr.opcode;
+      for(j=0;j<entryptr->instr.argc;j++){
+	memcpy(ptr,&entryptr->instr.argv[j].address,4);
+	ptr += 4;
+      }
+      break;
+    case DATA:
+      memcpy(ptr,&entryptr->data,entryptr->size);
+      ptr += entryptr->size;
+      break;
+    }
   }
   assert(loc == bin->size);
 
