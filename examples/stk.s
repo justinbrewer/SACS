@@ -15,6 +15,7 @@ main:
 	add
 	add
 	pop y
+	end
 
 	.data
 x:	.word 3
