@@ -45,13 +45,7 @@ int _delete_binary(struct asm_binary* bin);
 struct asm_instr* _create_instr(uint8_t max_argc);
 int _delete_instr(struct asm_instr* instr);
 
-struct asm_arg* _create_arg();
-int _delete_arg(struct asm_arg* arg);
-
 struct asm_entry* _create_entry();
 int _delete_entry(struct asm_entry* entry);
-
-struct asm_label* _create_label(uint32_t loc, char* name);
-int _delete_entry(struct asm_label* label);
 
 struct asm_instr* asm_decode_instr(char* instr, int argc, char** argv);

@@ -89,6 +89,3 @@ int _delete_instr(struct asm_instr* instr){
   free(instr);
   return 0;
 }
-
-struct asm_arg* _create_arg(){}
-int _delete_arg(struct asm_arg* arg){}
