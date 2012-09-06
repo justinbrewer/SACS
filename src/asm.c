@@ -84,6 +84,8 @@ struct asm_binary* asm_parse_file(const char* file){
     }
   }
 
+  fclose(fp);
+
   for(i=0;i<entry_list->size;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     if(entryptr->type == INSTR){
@@ -105,7 +107,15 @@ struct asm_binary* asm_parse_file(const char* file){
   for(i=0,loc=0;i<entry_list->size;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     assert(entryptr->loc == loc);
+    memcpy(bin->binary+loc,entryptr->entry,entryptr->size);
+    loc += entryptr->size;
   }
+  assert(loc == bin->size);
+
+  list_delete(entry_list);
+  list_delete(label_list);
+
+  return bin;
 }
 
 int asm_free_binary(struct asm_binary* bin){
