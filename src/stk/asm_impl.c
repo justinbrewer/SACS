@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-struct asm_instr* asm_decode_instr(char* operator, int argc, char** argv){
+struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
   struct asm_intsr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
   
   if(strcmp(operator,"end")){
