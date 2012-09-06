@@ -1,5 +1,6 @@
 #include "asm.h"
 #include "asm_impl.h"
+#include "list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,13 +11,17 @@
 int asm_init(){return 0;}
 int asm_cleanup(){return 0;}
 
-struct asm_binary* asm_parse_file(char* file){
-  int i;
+struct asm_binary* asm_parse_file(const char* file){
+  int i, toklen;
   char buf[MAX_LINE_LENGTH];
   char* token;
 
   FILE* fp = fopen(file,"r");
   //TODO: Check for NULL
+
+  uint32_t loc = 0;
+  asm_label label;
+  struct list* label_list = create_list(16,sizeof(struct asm_label));
 
   while(!feof(fp)){
     fgets(buf,MAX_LINE_LENGTH,fp);
@@ -31,9 +36,13 @@ struct asm_binary* asm_parse_file(char* file){
     
     token = strtok(buf," \t\n\v\f\r");
     while(token != NULL){
-      if(token[strlen(token)-2] == ':'){
-	token[strlen(token)-2] = 0;
-	//TODO: Handle label
+      toklen = strlen(token);
+      if(token[toklen-2] == ':'){
+	token[toklen-2] = 0;
+	label.loc = loc;
+	label.name = (char*)malloc(toklen+1);
+	strcpy(label.name,token);
+	list_add(label_list,&label);
       }else if(token[0]='.'){
 	token++;
 	//TODO: Handle data/segment markers
