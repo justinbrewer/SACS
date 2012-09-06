@@ -3,11 +3,40 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
+#define MAX_LINE_LENGTH 256
 
 int asm_init(){return 0;}
 int asm_cleanup(){return 0;}
 
-struct asm_binary* asm_parse_file(char* file){}
+struct asm_binary* asm_parse_file(char* file){
+  int i;
+  char buf[MAX_LINE_LENGTH];
+  char* token;
+
+  FILE* fp = fopen(file,"r");
+  //TODO: Check for NULL
+
+  while(!feof(fp)){
+    fgets(buf,MAX_LINE_LENGTH,fp);
+    
+    //Strip Comments
+    for(i=0;i<MAX_LINE_LENGTH;i++){
+      if(buf[i] == '#'){
+	buf[i] = 0;
+	break;
+      }
+    }
+    
+    token = strtok(buf," \t\n\v\f\r");
+    while(token != NULL){
+      //TODO Handle token
+
+      token = strtok(NULL," \t\n\v\f\r");
+    }
+  }
+}
 
 int asm_free_binary(struct asm_binary* bin){
   return _delete_binary(bin);
