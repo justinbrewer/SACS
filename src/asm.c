@@ -60,6 +60,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  entry.size = 2;
 	  entry.entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
 	  list_add(entry_list,&entry);
+	  loc += 2;
 	}
       }else{
 	entry.type = INSTR;
@@ -75,6 +76,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	free(instr);
 	entry.size = 1 + (argc<<2); //1byte for opcode + 4bytes per argument
 	list_add(entry_list,&entry);
+	loc += entry.size;
       }
       token = strtok(NULL," \t\n\v\f\r");
     }
