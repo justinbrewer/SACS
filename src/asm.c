@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #define MAX_LINE_LENGTH 256
 
@@ -69,7 +70,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	operator = token;
 	argc = 0;
 	while((token = strtok(NULL,", \t\n\v\f\r")) != NULL){
-	  //TODO: Check argc <= MAX_ARGC
+	  assert(argc <= MAX_ARGC);
 	  strcpy(argv[argc++],token);
 	}
 	instr = asm_decode_instr(token,argc,argv);
@@ -103,6 +104,7 @@ struct asm_binary* asm_parse_file(const char* file){
 
   for(i=0,loc=0;i<entry_list->size;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
+    assert(entryptr->loc == loc);
   }
 }
 
