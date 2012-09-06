@@ -18,7 +18,7 @@ struct asm_binary* asm_parse_file(const char* file){
   char* token, operator;
 
   FILE* fp = fopen(file,"r");
-  //TODO: Check for NULL
+  assert(fp != NULL);
 
   uint32_t loc = 0, text_segment, data_segment;
   struct asm_label label, *labelptr;
