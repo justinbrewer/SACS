@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char** argv){
   struct asm_intsr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
@@ -24,13 +25,10 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char** argv){
     instr->opcode = 0x04;
     instr->argc = 1;
   }else{
-    //TODO: Unknown operator
+    assert(0);
   }
 
-  if(instr->argc != argc){
-    //TODO: Properly handle error
-    argc = instr->argc; //I am the Great Mighty Poo!
-  }
+  assert(argc == instr->argc);
 
   for(int i=0;i<argc;i++){
     if(isalpha(argv[i][0])){
