@@ -7,6 +7,8 @@ OBJDIR = obj
 TOBJDIR = tobj
 BUILDDIR = build
 
+MACHINE ?= acc
+
 all: init
 
 init:
@@ -27,3 +29,12 @@ clean:
 
 $(OBJDIR)/mem.o: src/mem.h src/mem.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/mem.o src/mem.c
+
+$(OBJDIR)/asm.o: src/asm.h src/asm_impl.h src/asm.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/asm.o src/asm.c
+
+$(OBJDIR)/asm_impl.o: src/asm.h src/asm_impl.h src/$(MACHINE)/asm_impl.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/asm_impl.o src/$(MACHINE)/asm_impl.c
+
+$(OBJDIR)/list.o: src/list.h src/list.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/list.o src/list.c
