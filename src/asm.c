@@ -25,6 +25,7 @@ struct asm_binary* asm_parse_file(const char* file){
   struct asm_entry entry, *entryptr;
   struct list* entry_list = create_list(256,sizeof(struct asm_entry));
   struct asm_instr* instr;
+  struct asm_binary* bin;
 
   while(!feof(fp)){
     fgets(buf,MAX_LINE_LENGTH,fp);
@@ -92,6 +93,16 @@ struct asm_binary* asm_parse_file(const char* file){
 	}
       }
     }
+  }
+
+  bin = _create_binary();
+  bin->size = loc;
+  bin->text_segment = text_segment;
+  bin->data_segment = data_segment;
+  bin->binary = (uint8_t*)malloc(bin->size);
+
+  for(i=0,loc=0;i<entry_list->size;i++){
+    entryptr = (struct asm_entry*)list_get(entry_list,i);
   }
 }
 
