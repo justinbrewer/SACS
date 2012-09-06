@@ -22,6 +22,8 @@ struct asm_binary* asm_parse_file(const char* file){
   uint32_t loc = 0, text_segment, data_segment;
   struct asm_label label;
   struct list* label_list = create_list(16,sizeof(struct asm_label));
+  struct asm_entry entry;
+  struct list* entry_list = create_list(256,sizeof(struct asm_entry));
 
   while(!feof(fp)){
     fgets(buf,MAX_LINE_LENGTH,fp);
@@ -51,6 +53,12 @@ struct asm_binary* asm_parse_file(const char* file){
 	  text_segment = loc;
 	}else if(strcmp("data",token) == 0){
 	  data_segment = loc;
+	}else if(strcmp("word",token) == 0){
+	  entry.type = DATA;
+	  entry.loc = loc;
+	  entry.size = 2;
+	  entry.entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
+	  list_add(entry_list,&entry);
 	}
       }else{
 	//TODO: Handle instruction
