@@ -21,7 +21,7 @@ uint32_t list_add(struct list* l, void* data){
     l->size *= 1.5;
     l->data = realloc(l->data,l->size*l->entry_size);
   }
-  memcpy(l->data+(l->ptr*l->entry_size),data,entry_size);
+  memcpy(l->data+(l->ptr*l->entry_size),data,l->entry_size);
   return l->ptr++;
 }
 
