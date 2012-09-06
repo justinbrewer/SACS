@@ -19,7 +19,7 @@ struct asm_binary* asm_parse_file(const char* file){
   FILE* fp = fopen(file,"r");
   //TODO: Check for NULL
 
-  uint32_t loc = 0;
+  uint32_t loc = 0, text_segment, data_segment;
   asm_label label;
   struct list* label_list = create_list(16,sizeof(struct asm_label));
 
@@ -44,7 +44,14 @@ struct asm_binary* asm_parse_file(const char* file){
 	list_add(label_list,&label);
       }else if(token[0]='.'){
 	token++;
-	//TODO: Handle data/segment markers
+	for(i=0;i<toklen;i++){
+	  token[i]=tolower(token[i]);
+	}
+	if(strcmp("text",token) == 0){
+	  text_segment = loc;
+	}else if(strcmp("data",token) == 0){
+	  data_segment = loc;
+	}
       }else{
 	//TODO: Handle instruction
       }
