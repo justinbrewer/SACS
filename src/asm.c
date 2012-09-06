@@ -20,7 +20,7 @@ struct asm_binary* asm_parse_file(const char* file){
   //TODO: Check for NULL
 
   uint32_t loc = 0, text_segment, data_segment;
-  asm_label label;
+  struct asm_label label;
   struct list* label_list = create_list(16,sizeof(struct asm_label));
 
   while(!feof(fp)){
