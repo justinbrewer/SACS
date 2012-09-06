@@ -30,7 +30,9 @@ struct asm_binary* asm_parse_file(const char* file){
   struct asm_binary* bin;
 
   while(!feof(fp)){
-    fgets(buf,MAX_LINE_LENGTH,fp);
+    if(fgets(buf,MAX_LINE_LENGTH,fp) == NULL){
+      break;
+    }
     
     //Strip Comments
     for(i=0;i<MAX_LINE_LENGTH;i++){
@@ -43,12 +45,12 @@ struct asm_binary* asm_parse_file(const char* file){
     token = strtok(buf," \t\n\v\f\r");
     while(token != NULL){
       toklen = strlen(token);
-      if(token[toklen-2] == ':'){
-	token[toklen-2] = 0;
+      if(token[toklen-1] == ':'){
+	token[toklen-1] = 0;
 	label.loc = loc;
 	strcpy(label.name,token);
 	list_add(label_list,&label);
-      }else if(token[0]='.'){
+      }else if(token[0] == '.'){
 	token++;
 	for(i=0;i<toklen;i++){
 	  token[i]=tolower(token[i]);
@@ -74,7 +76,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  assert(argc <= MAX_ARGC);
 	  strcpy(argv[argc++],token);
 	}
-	instr = asm_decode_instr(token,argc,argv);
+	instr = asm_decode_instr(operator,argc,argv);
 	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
 	entry.size = 1 + (argc<<2); //1byte for opcode + 4bytes per argument
@@ -87,13 +89,13 @@ struct asm_binary* asm_parse_file(const char* file){
 
   fclose(fp);
 
-  for(i=0;i<entry_list->size;i++){
+  for(i=0;i<entry_list->ptr;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     if(entryptr->type == INSTR){
       instr = &entryptr->instr;
-      for(j=0;j<instr->argc;i++){
+      for(j=0;j<instr->argc;j++){
 	if(instr->argv[j].type == REFERENCE){
-	  for(k=0;k<label_list->size;k++){
+	  for(k=0;k<label_list->ptr;k++){
 	    labelptr = (struct asm_label*)list_get(label_list,k);
 	    if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
 	      instr->argv[j].type = ADDRESS;
@@ -113,7 +115,7 @@ struct asm_binary* asm_parse_file(const char* file){
   bin->data_segment = data_segment;
   bin->binary = (uint8_t*)malloc(bin->size);
 
-  for(i=0,loc=0;i<entry_list->size;i++){
+  for(i=0,loc=0;i<entry_list->ptr;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     assert(entryptr->loc == loc);
     memcpy(bin->binary+loc,&entryptr->data,entryptr->size);
