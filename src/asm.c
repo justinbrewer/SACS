@@ -40,7 +40,6 @@ struct asm_binary* asm_parse_file(const char* file){
       if(token[toklen-2] == ':'){
 	token[toklen-2] = 0;
 	label.loc = loc;
-	label.name = (char*)malloc(toklen+1);
 	strcpy(label.name,token);
 	list_add(label_list,&label);
       }else if(token[0]='.'){

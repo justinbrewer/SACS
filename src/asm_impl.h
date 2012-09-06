@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#define MAX_TOKEN_LEN  16
+
 typedef enum { ADDRESS, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
 
@@ -11,7 +13,7 @@ struct asm_arg {
   asm_arg_type type;
   union data {
     uint32_t address;
-    char* reference;
+    char reference[MAX_TOKEN_LEN];
   };
 };
 
@@ -34,7 +36,7 @@ struct asm_entry {
 
 struct asm_label {
   uint32_t loc;
-  char* name;
+  char name[MAX_TOKEN_LEN];
 };
 
 struct asm_binary* _create_binary();
