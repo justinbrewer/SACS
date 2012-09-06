@@ -31,8 +31,15 @@ struct asm_binary* asm_parse_file(char* file){
     
     token = strtok(buf," \t\n\v\f\r");
     while(token != NULL){
-      //TODO Handle token
-
+      if(token[strlen(token)-2] == ':'){
+	token[strlen(token)-2] = 0;
+	//TODO: Handle label
+      }else if(token[0]='.'){
+	token++;
+	//TODO: Handle data/segment markers
+      }else{
+	//TODO: Handle instruction
+      }
       token = strtok(NULL," \t\n\v\f\r");
     }
   }
