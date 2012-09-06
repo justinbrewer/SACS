@@ -3,6 +3,7 @@
 #include "list.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
@@ -15,16 +16,16 @@ int asm_cleanup(){return 0;}
 struct asm_binary* asm_parse_file(const char* file){
   int i, j, k, toklen, argc;
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
-  char* token, operator;
+  char* token, *operator;
 
   FILE* fp = fopen(file,"r");
   assert(fp != NULL);
 
   uint32_t loc = 0, text_segment, data_segment;
   struct asm_label label, *labelptr;
-  struct list* label_list = create_list(16,sizeof(struct asm_label));
+  struct list* label_list = list_create(16,sizeof(struct asm_label));
   struct asm_entry entry, *entryptr;
-  struct list* entry_list = create_list(256,sizeof(struct asm_entry));
+  struct list* entry_list = list_create(256,sizeof(struct asm_entry));
   struct asm_instr* instr;
   struct asm_binary* bin;
 
