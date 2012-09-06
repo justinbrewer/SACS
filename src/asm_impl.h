@@ -12,7 +12,7 @@ typedef enum { INSTR, DATA } asm_entry_type;
 
 struct asm_arg {
   asm_arg_type type;
-  union data {
+  union {
     uint32_t address;
     char reference[MAX_TOKEN_LEN];
   };
@@ -29,7 +29,7 @@ struct asm_entry {
   uint32_t loc;
   uint32_t size;
 
-  union entry {
+  union {
     struct asm_instr instr;
     uint32_t data;
   };

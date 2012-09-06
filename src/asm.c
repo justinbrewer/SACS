@@ -60,7 +60,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  entry.type = DATA;
 	  entry.loc = loc;
 	  entry.size = 2;
-	  entry.entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
+	  entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
 	  list_add(entry_list,&entry);
 	  loc += 2;
 	}
@@ -74,7 +74,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  strcpy(argv[argc++],token);
 	}
 	instr = asm_decode_instr(token,argc,argv);
-	memcpy(&entry.entry.instr,instr,sizeof(struct asm_instr));
+	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
 	entry.size = 1 + (argc<<2); //1byte for opcode + 4bytes per argument
 	list_add(entry_list,&entry);
@@ -89,14 +89,14 @@ struct asm_binary* asm_parse_file(const char* file){
   for(i=0;i<entry_list->size;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     if(entryptr->type == INSTR){
-      instr = &entryptr->entry.instr;
+      instr = &entryptr->instr;
       for(j=0;j<instr->argc;i++){
 	if(instr->argv[j].type == REFERENCE){
 	  for(k=0;k<label_list->size;k++){
 	    labelptr = (struct asm_label*)list_get(label_list,k);
-	    if(strcmp(instr->argv[j].data.reference,labelptr->name) == 0){
+	    if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
 	      instr->argv[j].type = ADDRESS;
-	      instr->argv[j].data.address = labelptr->loc;
+	      instr->argv[j].address = labelptr->loc;
 	      break;
 	    }
 	  }
@@ -115,7 +115,7 @@ struct asm_binary* asm_parse_file(const char* file){
   for(i=0,loc=0;i<entry_list->size;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
     assert(entryptr->loc == loc);
-    memcpy(bin->binary+loc,entryptr->entry,entryptr->size);
+    memcpy(bin->binary+loc,&entryptr->data,entryptr->size);
     loc += entryptr->size;
   }
   assert(loc == bin->size);
