@@ -12,9 +12,9 @@ int asm_init(){return 0;}
 int asm_cleanup(){return 0;}
 
 struct asm_binary* asm_parse_file(const char* file){
-  int i, toklen;
-  char buf[MAX_LINE_LENGTH];
-  char* token;
+  int i, toklen, argc;
+  char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
+  char* token, operator;
 
   FILE* fp = fopen(file,"r");
   //TODO: Check for NULL
@@ -24,6 +24,7 @@ struct asm_binary* asm_parse_file(const char* file){
   struct list* label_list = create_list(16,sizeof(struct asm_label));
   struct asm_entry entry;
   struct list* entry_list = create_list(256,sizeof(struct asm_entry));
+  struct asm_instr* instr;
 
   while(!feof(fp)){
     fgets(buf,MAX_LINE_LENGTH,fp);
@@ -61,7 +62,19 @@ struct asm_binary* asm_parse_file(const char* file){
 	  list_add(entry_list,&entry);
 	}
       }else{
-	//TODO: Handle instruction
+	entry.type = INSTR;
+	entry.loc = loc;
+	operator = token;
+	argc = 0;
+	while((token = strtok(NULL,", \t\n\v\f\r")) != NULL){
+	  //TODO: Check argc <= MAX_ARGC
+	  strcpy(argv[argc++],token);
+	}
+	instr = asm_decode_instr(token,argc,argv);
+	memcpy(&entry.entry.instr,instr,sizeof(struct asm_instr));
+	free(instr);
+	entry.size = 1 + (argc<<2); //1byte for opcode + 4bytes per argument
+	list_add(entry_list,&entry);
       }
       token = strtok(NULL," \t\n\v\f\r");
     }
