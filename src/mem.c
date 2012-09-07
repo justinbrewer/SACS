@@ -6,10 +6,10 @@
 #define ROOT_SIZE 32
 #define MINIMUM_SIZE 8
 
-typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } NodeState;
+typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } mem_node_state;
 
 struct mem_node {
-  NodeState state;
+  mem_node_state state;
   uint32_t size;
   uint32_t loc;
 
@@ -20,7 +20,7 @@ struct mem_node {
   uint8_t* mem;
 };
 
-typedef enum { INSUFFICIENT_SPACE=1 } AllocError;
+typedef enum { INSUFFICIENT_SPACE=1 } mem_error;
 
 struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* parent);
 int _delete_node(struct mem_node* node);
