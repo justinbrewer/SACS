@@ -8,27 +8,27 @@
 
 typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } NodeState;
 
-struct MemoryNode {
+struct mem_node {
   NodeState state;
   uint32_t size;
   uint32_t loc;
 
-  struct MemoryNode* parent;
-  struct MemoryNode* left;
-  struct MemoryNode* right;
+  struct mem_node* parent;
+  struct mem_node* left;
+  struct mem_node* right;
 
   uint8_t* mem;
 };
 
 typedef enum { INSUFFICIENT_SPACE=1 } AllocError;
 
-struct MemoryNode* _create_node(uint32_t size, uint32_t loc, struct MemoryNode* parent);
-int _delete_node(struct MemoryNode* node);
-struct MemoryNode* _get_node(uint32_t loc);
-uint32_t _dyn_alloc(struct MemoryNode* node, uint32_t size);
-int _collapse_node(struct MemoryNode* node);
+struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* parent);
+int _delete_node(struct mem_node* node);
+struct mem_node* _get_node(uint32_t loc);
+uint32_t _dyn_alloc(struct mem_node* node, uint32_t size);
+int _collapse_node(struct mem_node* node);
 
-struct MemoryNode* root;
+struct mem_node* root;
 
 int mem_init(void){
   root = _create_node(ROOT_SIZE,0,0);
@@ -62,7 +62,7 @@ uint32_t mem_dynamic_alloc(uint32_t size){
 }
 
 int mem_free(uint32_t loc){
-  struct MemoryNode* node = _get_node(loc);
+  struct mem_node* node = _get_node(loc);
   if(node->loc != loc){
     return -1;
   }
@@ -74,7 +74,7 @@ int mem_free(uint32_t loc){
 }
 
 void* mem_translate_addr(uint32_t loc){
-  struct MemoryNode* node = _get_node(loc);
+  struct mem_node* node = _get_node(loc);
   if(node != 0 && node->state == FULL){
     uint32_t offset = loc - node->loc;
     return node->mem + offset;
@@ -107,16 +107,16 @@ uint32_t mem_write32(uint32_t loc, uint32_t data){
   return *((uint32_t*)mem_translate_addr(loc)) = data;
 }
 
-struct MemoryNode* _create_node(uint32_t size, uint32_t loc, struct MemoryNode* parent){
-  struct MemoryNode* node = (struct MemoryNode*)malloc(sizeof(struct MemoryNode));
-  memset(node,0,sizeof(struct MemoryNode));
+struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* parent){
+  struct mem_node* node = (struct mem_node*)malloc(sizeof(struct mem_node));
+  memset(node,0,sizeof(struct mem_node));
   node->size = size;
   node->loc = loc;
   node->parent = parent;
   return node;
 }
 
-int _delete_node(struct MemoryNode* node){
+int _delete_node(struct mem_node* node){
   if(node->left != 0){
     _delete_node(node->left);
   }
@@ -129,7 +129,7 @@ int _delete_node(struct MemoryNode* node){
   free(node);
 }
 
-struct MemoryNode* __get_node(struct MemoryNode* node, uint32_t loc){
+struct mem_node* __get_node(struct mem_node* node, uint32_t loc){
   switch(node->state){
   case FREE:
     return node;
@@ -152,11 +152,11 @@ struct MemoryNode* __get_node(struct MemoryNode* node, uint32_t loc){
   }
 }
 
-struct MemoryNode* _get_node(uint32_t loc){
+struct mem_node* _get_node(uint32_t loc){
   return __get_node(root,loc);
 }
 
-uint32_t _dyn_alloc(struct MemoryNode* node, uint32_t size){
+uint32_t _dyn_alloc(struct mem_node* node, uint32_t size){
   uint32_t res;
   switch(node->state){
   case FREE:
@@ -182,7 +182,7 @@ uint32_t _dyn_alloc(struct MemoryNode* node, uint32_t size){
 	  return _dyn_alloc(node->right,size);
 	}else{
 	  return _dyn_alloc(node->right,size);
-	}      
+	}
       }else{
 	return res;
       }
@@ -196,7 +196,7 @@ uint32_t _dyn_alloc(struct MemoryNode* node, uint32_t size){
   return 0;
 }
 
-int _collapse_node(struct MemoryNode* node){
+int _collapse_node(struct mem_node* node){
   if(node->left != 0 && node->left->state == FREE){
     _delete_node(node->left);
     node->left = 0;
