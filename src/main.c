@@ -1,3 +1,4 @@
+#include "asm.h"
 #include "mem.h"
 
 #include <stdio.h>
@@ -8,11 +9,14 @@ int main(int argc, char** argv){
     return 0;
   }
 
-
+  asm_init();
+  struct asm_binary* bin = asm_parse_file(argv[1]);
 
   mem_init();
 
-  mem_cleanup();
 
+
+  mem_cleanup();
+  asm_cleanup();
   return 0;
 }
