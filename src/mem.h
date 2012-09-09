@@ -1,10 +1,12 @@
 #pragma once
 #include <stdint.h>
 
+typedef enum { MEM_FAKE_ALLOC=1, MEM_USE_LOCKED=2 } mem_alloc_flags;
+
 int mem_init(void);
 int mem_cleanup(void);
 
-uint32_t mem_dynamic_alloc(uint32_t size);
+uint32_t mem_dynamic_alloc(uint32_t size, mem_alloc_flags flags);
 int mem_free(uint32_t loc);
 
 void* mem_translate_addr(uint32_t loc);

@@ -25,7 +25,7 @@ typedef enum { INSUFFICIENT_SPACE=1 } mem_error;
 struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* parent);
 int _delete_node(struct mem_node* node);
 struct mem_node* _get_node(uint32_t loc);
-uint32_t _dyn_alloc(struct mem_node* node, uint32_t size);
+uint32_t _dyn_alloc(struct mem_node* node, uint32_t size, mem_alloc_flags flags);
 int _collapse_node(struct mem_node* node);
 
 struct mem_node* root;
@@ -47,13 +47,13 @@ int mem_cleanup(void){
   return 0;
 }
 
-uint32_t mem_dynamic_alloc(uint32_t size){
+uint32_t mem_dynamic_alloc(uint32_t size, mem_alloc_flags flags){
   uint32_t bit_size = !(size & (size-1)) ? -1 : 0;
   for(; size != 0; bit_size++, size >>= 1);
   if(bit_size == 0){
     return 0;
   }
-  return _dyn_alloc(root,bit_size);
+  return _dyn_alloc(root,bit_size,flags);
 }
 
 int mem_free(uint32_t loc){
@@ -151,39 +151,44 @@ struct mem_node* _get_node(uint32_t loc){
   return __get_node(root,loc);
 }
 
-uint32_t _dyn_alloc(struct mem_node* node, uint32_t size){
+uint32_t _dyn_alloc(struct mem_node* node, uint32_t size, mem_alloc_flags flags){
   uint32_t res;
   switch(node->state){
   case FREE:
     if(node->size == size || node->size == MINIMUM_SIZE){
       node->state = FULL;
-      node->mem = malloc(1 << size);
+      if(!(flags & MEM_FAKE_ALLOC)){
+	node->mem = malloc(1 << size);
+      }
       return node->loc;
     }else{
       node->state = SPLIT;
       node->left = _create_node(node->size-1,node->loc,node);
-      return _dyn_alloc(node->left,size);
+      return _dyn_alloc(node->left,size,flags);
     }
 
+  case LOCKED:
+    if(!(flags & MEM_USE_LOCKED)){
+      return INSUFFICIENT_SPACE;
+    }
   case SPLIT:
     if(node->left == 0){
       node->left = _create_node(node->size-1,node->loc,node);
-      return _dyn_alloc(node->left,size);
+      return _dyn_alloc(node->left,size,flags);
     }else{
-      res = _dyn_alloc(node->left,size);
+      res = _dyn_alloc(node->left,size,flags);
       if(res == INSUFFICIENT_SPACE){
 	if(node->right == 0){
 	  node->right = _create_node(node->size-1,node->loc+(1<<(node->size-1)),node); //TESTME
-	  return _dyn_alloc(node->right,size);
+	  return _dyn_alloc(node->right,size,flags);
 	}else{
-	  return _dyn_alloc(node->right,size);
+	  return _dyn_alloc(node->right,size,flags);
 	}
       }else{
 	return res;
       }
     }
 
-  case LOCKED:
   case FULL:
     return INSUFFICIENT_SPACE;
   }
