@@ -6,7 +6,8 @@ int main(void){
   mem_init();
 
   printf("Allocating 1MB\n");
-  uint32_t loc = mem_dynamic_alloc(1<<20);
+  uint32_t loc = mem_dynamic_alloc(1<<20,0);
+  printf("Got address 0x%X\n",loc);
   
   printf("Writing 192342\n");
   mem_write32(loc,192343);
