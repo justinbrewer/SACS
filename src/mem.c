@@ -6,7 +6,7 @@
 #define ROOT_SIZE 32
 #define MINIMUM_SIZE 8
 
-typedef enum { FREE=0, SPLIT, FULL, LOCKED, STACK } mem_node_state;
+typedef enum { FREE=0, SPLIT, FULL, LOCKED } mem_node_state;
 
 struct mem_node {
   mem_node_state state;
@@ -38,11 +38,6 @@ int mem_init(void){
   root->left->state = SPLIT;
   root->left->left = _create_node(ROOT_SIZE-2,0,root->left);
   root->left->left->state = LOCKED;
-
-  root->right = _create_node(ROOT_SIZE-1,1<<(ROOT_SIZE-1),root);
-  root->right->state = SPLIT;
-  root->right->right = _create_node(ROOT_SIZE-2,3<<(ROOT_SIZE-2),root->right);
-  root->right->right->state = STACK;
   return 0;
 }
 
@@ -66,7 +61,7 @@ int mem_free(uint32_t loc){
   if(node->loc != loc){
     return -1;
   }
-  if(node->state == LOCKED || node->state == STACK){
+  if(node->state == LOCKED){
     return -2;
   }
   node->state = FREE;
@@ -189,7 +184,6 @@ uint32_t _dyn_alloc(struct mem_node* node, uint32_t size){
     }
 
   case LOCKED:
-  case STACK:
   case FULL:
     return INSUFFICIENT_SPACE;
   }
