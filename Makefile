@@ -7,7 +7,7 @@ OBJDIR = obj
 TOBJDIR = tobj
 BUILDDIR = build
 
-SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
+SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec_impl.o
 
 all: init sacs
 
@@ -34,7 +34,7 @@ asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
 clean:
 	rm -rf $(OBJDIR) $(TOBJDIR) $(BUILDDIR)
 
-$(OBJDIR)/main.o: src/asm.h src/mem.h src/main.c
+$(OBJDIR)/main.o: src/asm.h src/mem.h src/exec.h src/main.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o src/main.c
 
 $(OBJDIR)/mem.o: src/mem.h src/mem.c
@@ -45,6 +45,9 @@ $(OBJDIR)/asm.o: src/asm.h src/asm_impl.h src/asm.c
 
 $(OBJDIR)/asm_impl.o: src/asm.h src/asm_impl.h src/$(MACHINE)/asm_impl.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/asm_impl.o src/$(MACHINE)/asm_impl.c
+
+$(OBJDIR)/exec_impl.o: src/mem.h src/exec.h src/$(MACHINE)/instr.h src/$(MACHINE)/exec_impl.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/exec_impl.o src/$(MACHINE)/exec_impl.c
 
 $(OBJDIR)/list.o: src/list.h src/list.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/list.o src/list.c
