@@ -1,5 +1,6 @@
 #include "asm.h"
 #include "mem.h"
+#include "exec.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -19,6 +20,8 @@ int main(int argc, char** argv){
   uint32_t loc = mem_dynamic_alloc(bin->size,MEM_USE_LOCKED);
   assert(loc == 0x400000);
   memcpy(mem_translate_addr(loc),bin->binary,bin->size);
+
+  exec_run(loc,loc,loc);
 
   mem_cleanup();
   asm_cleanup();
