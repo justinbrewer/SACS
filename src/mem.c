@@ -126,8 +126,7 @@ int _delete_node(struct mem_node* node){
 
 struct mem_node* __get_node(struct mem_node* node, uint32_t loc){
   switch(node->state){
-  case FREE:
-    return node;
+  case LOCKED:
   case SPLIT:
     if(loc < node->loc+(1<<(node->size-1))){
       if(node->left != 0){
@@ -142,6 +141,7 @@ struct mem_node* __get_node(struct mem_node* node, uint32_t loc){
 	return 0;//FIXME
       }
     }
+  case FREE:
   case FULL:
     return node;
   }
