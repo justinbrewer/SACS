@@ -7,9 +7,9 @@ OBJDIR = obj
 TOBJDIR = tobj
 BUILDDIR = build
 
-#MACHINE ?= acc
+SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
 
-all: init
+all: init sacs
 
 init:
 	mkdir -p $(OBJDIR)
@@ -17,6 +17,9 @@ init:
 
 tinit: init
 	mkdir -p $(TOBJDIR)
+
+sacs: $(SACSOBJ)
+	$(LL) $(LFLAGS) -o $(BUILDDIR)/sacs $(SACSOBJ)
 
 test: tinit memtest asmtest
 
@@ -30,6 +33,9 @@ asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
 
 clean:
 	rm -rf $(OBJDIR) $(TOBJDIR) $(BUILDDIR)
+
+$(OBJDIR)/main.o: src/asm.h src/mem.h src/main.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o src/main.c
 
 $(OBJDIR)/mem.o: src/mem.h src/mem.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/mem.o src/mem.c
