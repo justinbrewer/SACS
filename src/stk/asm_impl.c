@@ -1,5 +1,6 @@
 #include "asm.h"
 #include "asm_impl.h"
+#include "stk/instr.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,19 +11,19 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
   struct asm_instr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
   
   if(strcmp(operator,"end") == 0){
-    instr->opcode = 0x00;
+    instr->opcode = END;
     instr->argc = 0;
   }else if(strcmp(operator,"push") == 0){
-    instr->opcode = 0x01;
+    instr->opcode = PUSH;
     instr->argc = 1;
   }else if(strcmp(operator,"pop") == 0){
-    instr->opcode = 0x02;
+    instr->opcode = POP;
     instr->argc = 1;
   }else if(strcmp(operator,"add") == 0){
-    instr->opcode = 0x03;
+    instr->opcode = ADD;
     instr->argc = 0;
   }else if(strcmp(operator,"mul") == 0){
-    instr->opcode = 0x04;
+    instr->opcode = MUL;
     instr->argc = 0;
   }else{
     assert(0);
