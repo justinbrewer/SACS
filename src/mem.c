@@ -30,6 +30,10 @@ int _collapse_node(struct mem_node* node);
 
 struct mem_node* root;
 
+/** \brief Initializes memory module
+
+    Initializes root of memory tree and marks the lowest gigabyte as locked.
+ */
 int mem_init(void){
   root = _create_node(ROOT_SIZE,0,0);
   root->state = SPLIT;
@@ -41,12 +45,31 @@ int mem_init(void){
   return 0;
 }
 
+/** \brief Cleans up memory module
+    
+    Frees entire virtual memory space, as well as any real allocated memory.
+ */
 int mem_cleanup(void){
   _delete_node(root);
   root = 0;
   return 0;
 }
 
+/** \brief Allocates a block of memory
+
+    The size will be rounded up to the next power of two (eg. requesting 
+    140 bytes will allocate a block of 256 bytes.)
+
+    If the MEM_FAKE_ALLOC flag is set, the virtual block of memory will
+    be created and marked as full, but no real memory will be allocated.
+    If the MEM_USE_LOCKED flag is set, it will allocate memory in the
+    reserved first gigabyte address space.
+
+    \param size The size requested, in bytes
+    \param flags Control flags
+
+    \return Starting address of allocated block
+ */
 uint32_t mem_dynamic_alloc(uint32_t size, mem_alloc_flags flags){
   uint32_t bit_size = !(size & (size-1)) ? -1 : 0;
   for(; size != 0; bit_size++, size >>= 1);
@@ -56,6 +79,10 @@ uint32_t mem_dynamic_alloc(uint32_t size, mem_alloc_flags flags){
   return _dyn_alloc(root,bit_size,flags);
 }
 
+/** \brief Frees a block of memory
+    \param loc The starting address of the block to free
+    \return 0 on success, negative on failure
+ */
 int mem_free(uint32_t loc){
   struct mem_node* node = _get_node(loc);
   if(node->loc != loc){
@@ -68,6 +95,10 @@ int mem_free(uint32_t loc){
   return _collapse_node(node->parent);
 }
 
+/** \brief Translates virtual address to real address
+    \param loc Virtual address to translate
+    \return Pointer to real memory
+ */
 void* mem_translate_addr(uint32_t loc){
   struct mem_node* node = _get_node(loc);
   if(node != 0 && node->state == FULL){
@@ -78,26 +109,53 @@ void* mem_translate_addr(uint32_t loc){
   }
 }
 
+/** \brief Reads a byte from memory
+    \param loc Address to read
+    \return Value read
+ */
 uint8_t mem_read8(uint32_t loc){
   return *((uint8_t*)mem_translate_addr(loc));
 }
 
+/** \brief Reads a word from memory
+    \param loc Address to read
+    \return Value read
+ */
 uint16_t mem_read16(uint32_t loc){
   return *((uint16_t*)mem_translate_addr(loc));
 }
 
+/** \brief Reads a doubleword from memory
+    \param loc Address to read
+    \return Value read
+ */
 uint32_t mem_read32(uint32_t loc){
   return *((uint32_t*)mem_translate_addr(loc));
 }
 
+/** \brief Write a byte to memory
+    \param loc Address to write
+    \param data Value to write
+    \return Value written
+ */
 uint8_t mem_write8(uint32_t loc, uint8_t data){
   return *((uint8_t*)mem_translate_addr(loc)) = data;
 }
 
+/** \brief Write a word to memory
+    \param loc Address to write
+    \param data Value to write
+    \return Value written
+ */
 uint16_t mem_write16(uint32_t loc, uint16_t data){
   return *((uint16_t*)mem_translate_addr(loc)) = data;
 }
 
+/** \brief Write a doubleword to memory
+    \param loc Address to write
+    \param data Value to write
+    \return Value written
+ */
 uint32_t mem_write32(uint32_t loc, uint32_t data){
   return *((uint32_t*)mem_translate_addr(loc)) = data;
 }
