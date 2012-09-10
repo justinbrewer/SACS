@@ -31,8 +31,11 @@ asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
 	$(CC) $(CFLAGS) -o $(TOBJDIR)/asmtest.o tests/asmtest.c
 	$(LL) $(LFLAGS) -o $(BUILDDIR)/asmtest $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(TOBJDIR)/asmtest.o
 
+doc:
+	doxygen Doxyfile
+
 clean:
-	rm -rf $(OBJDIR) $(TOBJDIR) $(BUILDDIR)
+	rm -rf $(OBJDIR) $(TOBJDIR) $(BUILDDIR) doc
 
 $(OBJDIR)/main.o: src/asm.h src/mem.h src/exec.h src/main.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o src/main.c
