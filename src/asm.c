@@ -10,9 +10,30 @@
 
 #define MAX_LINE_LENGTH 256
 
+/** \brief Initializes assembler module
+
+    Currently does nothing. Included for completeness.
+ */
 int asm_init(){return 0;}
+
+/** \brief Cleans up assembler module
+
+    Currently does nothing. Included for completeness.
+ */
 int asm_cleanup(){return 0;}
 
+/** \brief Generates a binary from the given source file
+
+    The assembling process consists of three passes. The first pass iterates
+    through the source, keeping track of labels and segments, as well as
+    translating instructions from plain assembly into an intermediate format
+    with unresolved references. The second pass resolves all references. The
+    third pass collapses the instructions and data into the final binary format
+    readable by the execution module.
+
+    \param file Path to assembly file
+    \return Resulting binary
+ */
 struct asm_binary* asm_parse_file(const char* file){
   int i, j, k, toklen, argc;
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
@@ -141,6 +162,9 @@ struct asm_binary* asm_parse_file(const char* file){
   return bin;
 }
 
+/** \brief Properly cleans up an asm_binary struct
+    \param bin Binary to free
+ */
 int asm_free_binary(struct asm_binary* bin){
   return _delete_binary(bin);
 }
