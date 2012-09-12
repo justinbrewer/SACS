@@ -83,10 +83,10 @@ struct asm_binary* asm_parse_file(const char* file){
 	}else if(strcmp("word",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
-	  entry.size = 2;
+	  entry.size = 4;
 	  entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
 	  list_add(entry_list,&entry);
-	  loc += 2;
+	  loc += 4;
 	}
       }else{
 	entry.type = INSTR;
