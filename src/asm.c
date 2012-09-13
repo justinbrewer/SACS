@@ -26,10 +26,6 @@ struct asm_binary* asm_parse_file(const char* file){
   int i, j, k, toklen, argc;
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
   char* token, *operator;
-
-  FILE* fp = fopen(file,"r");
-  assert(fp != NULL);
-
   uint32_t loc = 0, text_segment, data_segment, label_base = 0;
   struct asm_label label, *labelptr;
   struct list* label_list = list_create(16,sizeof(struct asm_label));
@@ -38,10 +34,14 @@ struct asm_binary* asm_parse_file(const char* file){
   struct asm_instr* instr;
   struct asm_binary* bin;
 
+  //--------------
+  // Pass 1
+
+  FILE* fp = fopen(file,"r");
+  assert(fp != NULL);
+
   while(!feof(fp)){
-    if(fgets(buf,MAX_LINE_LENGTH,fp) == NULL){
-      break;
-    }
+    if(fgets(buf,MAX_LINE_LENGTH,fp) == NULL) break;
     
     //Strip Comments
     for(i=0;i<MAX_LINE_LENGTH;i++){
@@ -54,42 +54,54 @@ struct asm_binary* asm_parse_file(const char* file){
     token = strtok(buf," \t\n\v\f\r");
     while(token != NULL){
       toklen = strlen(token);
+
+      // Labels
       if(token[toklen-1] == ':'){
 	token[toklen-1] = 0;
 	label.loc = loc - label_base;
 	strcpy(label.name,token);
 	list_add(label_list,&label);
-      }else if(token[0] == '.'){
+      }
+
+      // Segments and Data
+      else if(token[0] == '.'){
 	token++;
-	for(i=0;i<toklen;i++){
-	  token[i]=tolower(token[i]);
-	}
+	for(i=0;i<toklen;i++) token[i]=tolower(token[i]);
+
 	if(strcmp("text",token) == 0){
 	  text_segment = loc;
 	  label_base = loc;
-	}else if(strcmp("data",token) == 0){
+	}
+	else if(strcmp("data",token) == 0){
 	  data_segment = loc;
 	  label_base = loc;
-	}else if(strcmp("word",token) == 0){
+	}
+	else if(strcmp("word",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
 	  entry.size = 4;
 	  entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
 	  list_add(entry_list,&entry);
-	  loc += 4;
+	  loc += entry.size;
 	}
-      }else{
+      }
+
+      //Instructions
+      else{
 	entry.type = INSTR;
 	entry.loc = loc;
 	operator = token;
+
 	argc = 0;
 	while((token = strtok(NULL,", \t\n\v\f\r")) != NULL){
 	  assert(argc <= MAX_ARGC);
 	  strcpy(argv[argc++],token);
 	}
+
 	instr = asm_decode_instr(operator,argc,argv);
 	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
+
 	entry.size = 4;
 	list_add(entry_list,&entry);
 	loc += entry.size;
@@ -100,25 +112,37 @@ struct asm_binary* asm_parse_file(const char* file){
 
   fclose(fp);
 
+  //--------------
+  // Pass 2
+
+  //Foreach instruction
   for(i=0;i<entry_list->ptr;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
-    if(entryptr->type == INSTR){
-      instr = &entryptr->instr;
-      for(j=0;j<instr->argc;j++){
-	if(instr->argv[j].type == REFERENCE){
-	  for(k=0;k<label_list->ptr;k++){
-	    labelptr = (struct asm_label*)list_get(label_list,k);
-	    if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
-	      instr->argv[j].type = ADDRESS;
-	      instr->argv[j].address = labelptr->loc;
-	      break;
-	    }
-	  }
-	  assert(instr->argv[j].type == ADDRESS);
+    if(entryptr->type != INSTR) continue;
+    instr = &entryptr->instr;
+
+    //Foreach reference argument
+    for(j=0;j<instr->argc;j++){
+      if(instr->argv[j].type != REFERENCE) continue;
+
+      //Find the corresponding label
+      for(k=0;k<label_list->ptr;k++){
+	labelptr = (struct asm_label*)list_get(label_list,k);
+
+	if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
+	  instr->argv[j].type = ADDRESS;
+	  instr->argv[j].address = labelptr->loc;
+	  break;
 	}
       }
+
+      //Bail out if the reference was not resolved
+      assert(instr->argv[j].type == ADDRESS);
     }
   }
+
+  //--------------
+  // Pass 3
 
   bin = _create_binary();
   bin->size = loc;
@@ -129,18 +153,24 @@ struct asm_binary* asm_parse_file(const char* file){
   uint8_t* ptr = bin->binary;
   for(i=0;i<entry_list->ptr;i++){
     entryptr = (struct asm_entry*)list_get(entry_list,i);
+
+    //Consistency check
     assert(entryptr->loc == ptr - bin->binary);
+
     switch(entryptr->type){
     case INSTR:
       *(uint32_t*)(ptr) = asm_collapse_instr(&entryptr->instr);
       ptr += 4;
       break;
+
     case DATA:
       memcpy(ptr,&entryptr->data,entryptr->size);
       ptr += entryptr->size;
       break;
     }
   }
+
+  //Consistency check
   assert(loc == bin->size);
 
   list_delete(entry_list);
