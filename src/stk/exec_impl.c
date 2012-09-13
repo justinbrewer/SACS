@@ -5,20 +5,19 @@
 #define STACK_SIZE 32
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
-  uint32_t pc = start, arg, sp = 0, stack[STACK_SIZE]={0};
+  uint32_t pc = start, ir, sp = 0, stack[STACK_SIZE]={0};
 
   while(1){
-    switch(mem_read8(pc++)){
+    ir = mem_read32(pc);
+    pc += 4;
+
+    switch(ir & 0xFF){
     case PUSH:
-      arg = mem_read32(pc);
-      pc += 4;
-      stack[sp++] = mem_read16(data+arg);
+      stack[sp++] = mem_read32(data + (ir >> 8));
       break;
 
     case POP:
-      arg = mem_read32(pc);
-      pc += 4;
-      mem_write16(data+arg,stack[--sp]);
+      mem_write32(data + (ir >> 8),stack[--sp]);
       break;
 
     case ADD:
