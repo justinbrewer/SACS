@@ -10,9 +10,6 @@ struct asm_binary {
   uint8_t* binary;
 };
 
-int asm_init();
-int asm_cleanup();
-
 struct asm_binary* asm_parse_file(const char* file);
 
 int asm_free_binary(struct asm_binary* bin);

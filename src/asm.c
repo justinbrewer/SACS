@@ -10,18 +10,6 @@
 
 #define MAX_LINE_LENGTH 256
 
-/** \brief Initializes assembler module
-
-    Currently does nothing. Included for completeness.
- */
-int asm_init(){return 0;}
-
-/** \brief Cleans up assembler module
-
-    Currently does nothing. Included for completeness.
- */
-int asm_cleanup(){return 0;}
-
 /** \brief Generates a binary from the given source file
 
     The assembling process consists of three passes. The first pass iterates
