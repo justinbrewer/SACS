@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define MAX_TOKEN_LEN  16
-#define MAX_ARGC 4
+#define MAX_ARGC 1
 
 typedef enum { ADDRESS, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
@@ -44,3 +44,4 @@ struct asm_binary* _create_binary();
 int _delete_binary(struct asm_binary* bin);
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]);
+uint32_t asm_collapse_instr(struct asm_instr* instr);

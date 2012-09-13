@@ -102,7 +102,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	instr = asm_decode_instr(operator,argc,argv);
 	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
-	entry.size = 1 + (argc<<2); //1byte for opcode + 4bytes per argument
+	entry.size = 4;
 	list_add(entry_list,&entry);
 	loc += entry.size;
       }
@@ -144,11 +144,8 @@ struct asm_binary* asm_parse_file(const char* file){
     assert(entryptr->loc == ptr - bin->binary);
     switch(entryptr->type){
     case INSTR:
-      *ptr++ = entryptr->instr.opcode;
-      for(j=0;j<entryptr->instr.argc;j++){
-	memcpy(ptr,&entryptr->instr.argv[j].address,4);
-	ptr += 4;
-      }
+      *(uint32_t*)(ptr) = asm_collapse_instr(&entryptr->instr);
+      ptr += 4;
       break;
     case DATA:
       memcpy(ptr,&entryptr->data,entryptr->size);
