@@ -12,7 +12,6 @@ int main(int argc, char** argv){
     return 0;
   }
 
-  asm_init();
   struct asm_binary* bin = asm_parse_file(argv[1]);
 
   mem_init();
@@ -24,6 +23,5 @@ int main(int argc, char** argv){
   exec_run(loc,loc,loc+bin->data_segment);
 
   mem_cleanup();
-  asm_cleanup();
   return 0;
 }
