@@ -42,7 +42,7 @@ struct asm_binary* asm_parse_file(const char* file){
   FILE* fp = fopen(file,"r");
   assert(fp != NULL);
 
-  uint32_t loc = 0, text_segment, data_segment;
+  uint32_t loc = 0, text_segment, data_segment, label_base = 0;
   struct asm_label label, *labelptr;
   struct list* label_list = list_create(16,sizeof(struct asm_label));
   struct asm_entry entry, *entryptr;
@@ -68,7 +68,7 @@ struct asm_binary* asm_parse_file(const char* file){
       toklen = strlen(token);
       if(token[toklen-1] == ':'){
 	token[toklen-1] = 0;
-	label.loc = loc;
+	label.loc = loc - label_base;
 	strcpy(label.name,token);
 	list_add(label_list,&label);
       }else if(token[0] == '.'){
@@ -78,8 +78,10 @@ struct asm_binary* asm_parse_file(const char* file){
 	}
 	if(strcmp("text",token) == 0){
 	  text_segment = loc;
+	  label_base = loc;
 	}else if(strcmp("data",token) == 0){
 	  data_segment = loc;
+	  label_base = loc;
 	}else if(strcmp("word",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
