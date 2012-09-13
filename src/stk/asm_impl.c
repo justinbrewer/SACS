@@ -43,3 +43,16 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
 
   return instr;
 }
+
+uint32_t asm_collapse_instr(struct asm_instr* instr){
+  switch(instr->opcode){
+  case PUSH:
+  case POP:
+    return instr->opcode + (instr->argv[0].address << 8);
+
+  case ADD:
+  case MUL:
+  case END:
+    return instr->opcode;
+  }
+}
