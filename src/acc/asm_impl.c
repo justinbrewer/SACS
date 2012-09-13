@@ -48,10 +48,10 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
   switch(instr->opcode){
   case LOAD:
   case STOR:
-    return instr->opcode + (instr->argv[0].address << 8);
-
   case ADD:
   case MUL:
+    return instr->opcode + (instr->argv[0].address << 8);
+
   case END:
     return instr->opcode;
   }
