@@ -1,3 +1,4 @@
+Justin Brewer jzb0012
 ------------------
 How to Use
 
@@ -82,6 +83,10 @@ Unresolved Issues
          - This is a consequence of asm_entry being able to represent either
 	   an instruction or data. I made it this way to simplify the asm_binary
 	   struct.
+
+         * However, this is useless since it only supports one data segment and
+           one text segment.
+
     - Memory Module
        - The entire tree idea, along with mem_dynamic_alloc, is unnecessary. I
          had a lot of free time...
