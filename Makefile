@@ -10,6 +10,7 @@ BUILDDIR = build
 SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec_impl.o
 
 all: init sacs
+	mv build/sacs ./$(MACHINE)Sim
 
 init:
 	mkdir -p $(OBJDIR)
