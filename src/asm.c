@@ -90,8 +90,9 @@ struct asm_binary* asm_parse_file(const char* file){
       else{
 	entry.type = INSTR;
 	entry.loc = loc;
-	operator = token;
+	entry.size = 4;
 
+	operator = token;
 	argc = 0;
 	while((token = strtok(NULL,", \t\n\v\f\r")) != NULL){
 	  assert(argc <= MAX_ARGC);
@@ -102,7 +103,6 @@ struct asm_binary* asm_parse_file(const char* file){
 	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
 
-	entry.size = 4;
 	list_add(entry_list,&entry);
 	loc += entry.size;
       }
