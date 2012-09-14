@@ -2,6 +2,8 @@
 #include "acc/instr.h"
 #include "mem.h"
 
+#include <stdio.h>
+
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
   uint32_t pc = start, acc, ir;
 
@@ -24,6 +26,10 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 
     case MUL:
       acc *= mem_read32(data + (ir >> 8));
+      break;
+
+    case PRNT:
+      printf("0x%x: 0x%x\n",(data + (ir >> 8)),mem_read32(data + (ir >> 8)));
       break;
 
     case END:
