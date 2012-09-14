@@ -5,13 +5,13 @@ To build and run the Accumulator machine, run:
 
    make MACHINE=acc
 
-   accSim <source-file>
+   ./accSim <source-file>
 
 And the Stack machine:
 
    make MACHINE=stk
 
-   stkSim <source-file>
+   ./stkSim <source-file>
 
 ***NOTE***: Be sure to run the following before changing machine types!
 
