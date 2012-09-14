@@ -2,6 +2,8 @@
 #include "stk/instr.h"
 #include "mem.h"
 
+#include <stdio.h>
+
 #define STACK_SIZE 32
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
@@ -28,6 +30,10 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
     case MUL:
       --sp;
       stack[sp-1] = stack[sp] * stack[sp-1];
+      break;
+
+    case PRNT:
+      printf("0x%x: 0x:%x\n",(data + (ir >> 8)),mem_read32(data + (ir >> 8)));
       break;
 
     case END:
