@@ -5,9 +5,9 @@
 #include <stdio.h>
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
-  uint32_t pc = start, acc, ir;
+  uint32_t pc = start, acc, ir, running = 1;
 
-  while(1){
+  while(running){
     ir = mem_read32(pc);
     pc += 4;
 
@@ -33,10 +33,10 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
       break;
 
     case END:
-      goto end; //Trololo
+      running = 0;
+      break;
     }
   }
 
- end:
   return 0;
 }
