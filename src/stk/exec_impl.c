@@ -33,7 +33,7 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
       break;
 
     case PRNT:
-      printf("0x%x: 0x:%x\n",(data + (ir >> 8)),mem_read32(data + (ir >> 8)));
+      printf("0x%x: 0x%x\n",(data + (ir >> 8)),mem_read32(data + (ir >> 8)));
       break;
 
     case END:
