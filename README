@@ -1,0 +1,91 @@
+------------------
+How to Use
+
+To build and run the Accumulator machine, run:
+
+   make MACHINE=acc
+
+   accSim <source-file>
+
+And the Stack machine:
+
+   make MACHINE=stk
+
+   stkSim <source-file>
+
+***NOTE***: Be sure to run the following before changing machine types!
+
+   make clean
+
+------------------
+How it works
+
+ - Main (main.c)
+    - Uses the assembler module to generate a binary
+    - Initializes the memory module and loads the binary
+      into address 0x400000
+    - Runs the execution module
+
+ - Assembler Module (asm.h asm.c asm_impl.h ***/asm_impl.c)
+    - (asm_parse_file) Pass 1 iterates through the file keeping track of labels,
+      segments, and data. If an instruction is encountered, asm_decode_instr is
+      used to translate it into an asm_instr struct. Each instance of either an
+      instruction or data is stored in an asm_entry struct. Pass 2 iterates over
+      every asm_entry to resolve references to labels. Pass 3 collapses all the
+      asm_entry's into the final asm_binary struct, using asm_collapse_instr to
+      convert asm_instr's into the binary encoding format.
+
+    - (asm_decode_instr) Translates the assembly form of an instruction into
+      an asm_instr with *unresolved* references. Implemented separately by each
+      machine.
+
+    - (asm_collapse_instr) Translates an asm_instr with *resolved* references
+      into the binary encoding format. Implemented separately by each machine.
+
+ - Memory Module (mem.h mem.c)
+    - The entire 4GB memory space is represented as a binary tree of mem_node's.
+
+    - (mem_dynamic_alloc) Allocates the leftmost available block of memory
+      whose size is the nearest power of two greater than or equal to the
+      requested size.
+
+    - (mem_translate_addr) Translates a simulated memory address to its
+      corresponding real memory address, if it exists.
+
+ - Execution Module (exec.h ***/exec_impl.c)
+    - (exec_run) Trivially simple.
+
+ - Misc.
+   - The list "module" was just a quick and dirty self-expanding array (like
+     ArrayList in Java or vector<T> in C++) I needed for the assembler.
+
+------------------
+Difficulties
+
+ - Endian-ness got confusing when setting up the binary encoding/decoding.
+   For example: To retrieve the opcode, you would say (ir & 0xFF), and to get
+   the argument, it's (ir >> 8). It looks like the opcode it at the end of the
+   instruction when it's really at the front.
+
+------------------
+Unresolved Issues
+
+ - asm_parse_file is hideous and incomprehensible.
+
+ - I make gratuitous use of assert, instead of providing useful error messages.
+
+ - There's a lot of unnecessary complexity. For example:
+    - Assembler Module
+       - Instructions can have many arguments even though only one is needed
+          - This made the asm_instr struct more complicated
+       - Text and Data segments can be intermixed
+         - This is a consequence of asm_entry being able to represent either
+	   an instruction or data. I made it this way to simplify the asm_binary
+	   struct.
+    - Memory Module
+       - The entire tree idea, along with mem_dynamic_alloc, is unnecessary. I
+         had a lot of free time...
+
+ - I don't differentiate between the text and data segments when loading the
+   binary into memory. The data segment is just tacked on to the end of the
+   text segment.
