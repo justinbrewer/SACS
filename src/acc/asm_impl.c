@@ -25,6 +25,9 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
   }else if(strcmp(operator,"mul") == 0){
     instr->opcode = MUL;
     instr->argc = 1;
+  }else if(strcmp(operator,"prnt") == 0){
+    instr->opcode = PRNT;
+    instr->argc = 1;
   }else{
     assert(0);
   }
@@ -50,6 +53,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
   case STOR:
   case ADD:
   case MUL:
+  case PRNT:
     return instr->opcode + (instr->argv[0].address << 8);
 
   case END:
