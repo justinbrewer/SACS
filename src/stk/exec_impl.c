@@ -7,9 +7,9 @@
 #define STACK_SIZE 32
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
-  uint32_t pc = start, ir, sp = 0, stack[STACK_SIZE]={0};
+  uint32_t pc = start, ir, sp = 0, stack[STACK_SIZE]={0}, running = 1;
 
-  while(1){
+  while(running){
     ir = mem_read32(pc);
     pc += 4;
 
@@ -37,10 +37,10 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
       break;
 
     case END:
-      goto end; //Trololo
+      running = 0;
+      break;
     }
   }
 
- end:
   return 0;
 }
