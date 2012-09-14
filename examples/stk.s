@@ -15,6 +15,7 @@ main:
 	add
 	add
 	pop y
+	prnt y
 	end
 
 	.data

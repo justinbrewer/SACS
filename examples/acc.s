@@ -12,6 +12,7 @@ main:
 	add a
 	add c
 	stor y
+	prnt y
 	end
 
 	.data
