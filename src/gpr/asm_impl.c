@@ -9,7 +9,8 @@
 
 #define CHECK_ARGC							\
   if(instr->argc != argc){						\
-    printf("Error: %s takes %d arguments\n",operator,instr->argc);	\
+    printf("Error: %s takes %d arguments, got %d\n",			\
+	   operator,instr->argc,argc);					\
     exit(EXIT_FAILURE);							\
   }
 
@@ -45,10 +46,36 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     LABEL_ARG(1);
   }
 
+  //LB requires special processing, since one arg is passed as imm(reg)
   else if(strcmp(operator,"lb") == 0){
     instr->opcode = LB;
-    instr->argc = 2;
-    CHECK_ARGC;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    //Split "imm(reg)" into "imm" "reg"
+    int i, len = strlen(argv[1]);
+    char* reg;
+    for(i=0;i<len;i++){
+      if(argv[1][i] == '('){
+	argv[1][i] = 0;
+	reg = i+1;
+	continue;
+      }
+      if(argv[1][i] == ')'){
+	argv[1][i] = 0;
+	break;
+      }
+    }
+    strcpy(argv[2],reg);
+
+    REGISTER_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
   }
 
   else if(strcmp(operator,"li") == 0){
