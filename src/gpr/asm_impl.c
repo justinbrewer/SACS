@@ -79,3 +79,53 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
 
   return instr;
 }
+
+uint32_t asm_collapse_instr(struct asm_instr* instr){
+  union gpr_instr_t res;
+
+  switch(instr->opcode){
+  case SYSCALL:
+    res.j.op = instr->opcode;
+    res.j.offset = 0;
+    break;
+
+  case ADDI:
+  case BGE:
+  case BNE:
+  case SUBI:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[1].value;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[2].value;
+    break;
+
+  case B:
+    res.j.op = instr->opcode;
+    res.j.offset = instr->argv[0].value;
+    break;
+
+  case BEQZ:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[0].value;
+    res.i.rd = 0;
+    res.i.offset = instr->argv[1].value;
+    break;
+
+  case LA:
+  case LI:
+    res.i.op = instr->opcode;
+    res.i.rs = 0;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[1].value;
+    break;
+
+  case LB:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[2].value;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[1].value;
+    break;
+  }
+
+  return res.u;
+}
