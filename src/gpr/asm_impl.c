@@ -1,9 +1,9 @@
 #include "asm.h"
 #include "asm_impl.h"
 #include "gpr/instr.h"
-#include "check.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -63,7 +63,7 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     for(i=0;i<len;i++){
       if(argv[1][i] == '('){
 	argv[1][i] = 0;
-	reg = i+1;
+	reg = (&argv[1][i])+1;
 	continue;
       }
       if(argv[1][i] == ')'){
@@ -173,7 +173,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
 
   case B:
     res.j.op = instr->opcode;
-    res.j.offset = instr->argv[0].value;
+    res.j.addr = instr->argv[0].value;
     break;
 
   case BEQZ:
@@ -202,7 +202,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
 
 uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]){
   int i;
-  static char register_names[32][3] = {"zero","at","v0","v1","a0","a1","a2","a3",
+  static char register_names[32][5] = {"zero","at","v0","v1","a0","a1","a2","a3",
                                        "t0","t1","t2","t3","t4","t5","t6","t7",
                                        "s0","s1","s2","s3","s4","s5","s6","s7",
                                        "t8","t9","k0","k1","gp","sp","fp","ra"};
@@ -212,12 +212,12 @@ uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]){
     exit(EXIT_FAILURE);
   }
 
-  if(isnum(name[1])){
+  if(isdigit(name[1])){
     return atoi(name+1);
   }
 
   for(i=0;i<32;i++){
-    if(strcmp(name,register_names[i]) == 0){
+    if(strcmp(name+1,register_names[i]) == 0){
       break;
     }
   }
