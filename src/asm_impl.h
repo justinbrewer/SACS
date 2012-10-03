@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define MAX_TOKEN_LEN  16
-#define MAX_ARGC 1
+#define MAX_ARGC 4
 
 typedef enum { VALUE, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
