@@ -7,13 +7,13 @@
 #define MAX_TOKEN_LEN  16
 #define MAX_ARGC 1
 
-typedef enum { ADDRESS, REFERENCE } asm_arg_type;
+typedef enum { VALUE, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
 
 struct asm_arg {
   asm_arg_type type;
   union {
-    uint32_t address;
+    uint32_t value;
     char reference[MAX_TOKEN_LEN];
   };
 };
