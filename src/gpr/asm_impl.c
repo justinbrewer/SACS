@@ -13,6 +13,18 @@
     exit(EXIT_FAILURE);							\
   }
 
+#define REGISTER_ARG(i)						\
+  instr->argv[i].type = VALUE;					\
+  instr->argv[i].value = _translate_reg_name(argv[i]);
+
+#define LABEL_ARG(i)				\
+  instr->argv[1].type = REFERENCE;		\
+  strcpy(instr->argv[1].reference,argv[1]);
+
+#define IMM_ARG(i)				\
+  instr->argv[1].type = VALUE;			\
+  instr->argv[1].value = atoi(argv[1]);
+
 uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]);
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
@@ -28,6 +40,9 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     instr->opcode = LA;
     instr->argc = 2;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    LABEL_ARG(1);
   }
 
   else if(strcmp(operator,"lb") == 0){
@@ -40,42 +55,66 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     instr->opcode = LI;
     instr->argc = 2;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    IMM_ARG(1);
   }
 
   else if(strcmp(operator,"b") == 0){
     instr->opcode = B;
     instr->argc = 1;
     CHECK_ARGC;
+
+    LABEL_ARG(0);
   }
 
   else if(strcmp(operator,"beqz") == 0){
     instr->opcode = BEQZ;
     instr->argc = 2;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    LABEL_ARG(1);
   }
 
   else if(strcmp(operator,"bge") == 0){
     instr->opcode = BGE;
     instr->argc = 3;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    LABEL_ARG(2);
   }
 
   else if(strcmp(operator,"bne") == 0){
     instr->opcode = BNE;
     instr->argc = 3;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    LABEL_ARG(2);
   }
 
   else if(strcmp(operator,"addi") == 0){
     instr->opcode = ADDI;
     instr->argc = 3;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    IMM_ARG(2);
   }
 
   else if(strcmp(operator,"subi") == 0){
     instr->opcode = SUBI;
     instr->argc = 3;
     CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    IMM_ARG(2);
   }
 
   else {
