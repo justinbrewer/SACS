@@ -130,14 +130,14 @@ struct asm_binary* asm_parse_file(const char* file){
 	labelptr = (struct asm_label*)list_get(label_list,k);
 
 	if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
-	  instr->argv[j].type = ADDRESS;
-	  instr->argv[j].address = labelptr->loc;
+	  instr->argv[j].type = VALUE;
+	  instr->argv[j].value = labelptr->loc;
 	  break;
 	}
       }
 
       //Bail out if the reference was not resolved
-      assert(instr->argv[j].type == ADDRESS);
+      assert(instr->argv[j].type == VALUE);
     }
   }
 
