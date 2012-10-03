@@ -7,7 +7,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#define CHECK_ARGC if(instr->argc != argc){printf("Error: %s takes %d arguments\n",operator,instr->argc);exit(EXIT_FAILURE);}
+#define CHECK_ARGC							\
+  if(instr->argc != argc){						\
+    printf("Error: %s takes %d arguments\n",operator,instr->argc);	\
+    exit(EXIT_FAILURE);							\
+  }
+
+uint32_t _register_arg(char name[MAX_TOKEN_LEN]);
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
   struct asm_instr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
@@ -126,4 +132,26 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
   }
 
   return res.u;
+}
+
+uint32_t _register_arg(char name[MAX_TOKEN_LEN]){
+  int offset;
+
+  if(name[0] != '$'){
+    printf("Error: Expected register, got \"%s\"\n",name);
+    exit(EXIT_FAILURE);
+  }
+
+  switch(name[1]){
+  case 't':
+    offset = name[2] - 0x30;
+    if(offset > 7){
+      return offset + 16;
+    }
+    return offset + 8;
+
+  case 's':
+    offset = name[2] - 0x30;
+    return offset + 16;
+  }
 }
