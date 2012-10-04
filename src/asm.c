@@ -84,6 +84,22 @@ struct asm_binary* asm_parse_file(const char* file){
 	  list_add(entry_list,&entry);
 	  loc += entry.size;
 	}
+	else if(strcmp("asciiz",token) == 0){
+	  entry.type = DATA;
+	  entry.loc = loc;
+	  entry.size = 0;
+
+	  list_add(entry_list,&entry);
+	  loc += entry.size;
+	}
+	else if(strcmp("space",token) == 0){
+	  entry.type = DATA;
+	  entry.loc = loc;
+	  entry.size = atoi(strtok(NULL," \t\n\v\f\r"));
+	  memset(&entry.data,0,entry.size);
+	  list_add(entry_list,&entry);
+	  loc += entry.size;
+	}
       }
 
       //Instructions
