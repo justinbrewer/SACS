@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef enum { SYSCALL=0x00,
 	       LA=0x10, LB=0x11, LI=0x12,
 	       B=0x20, BEQZ=0x21, BGE=0x22, BNE=0x23,
