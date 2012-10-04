@@ -54,7 +54,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
   case ADD:
   case MUL:
   case PRNT:
-    return instr->opcode + (instr->argv[0].address << 8);
+    return instr->opcode + (instr->argv[0].value << 8);
 
   case END:
     return instr->opcode;
