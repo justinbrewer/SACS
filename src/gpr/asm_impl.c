@@ -19,12 +19,12 @@
   instr->argv[i].value = _translate_reg_name(argv[i]);
 
 #define LABEL_ARG(i)				\
-  instr->argv[1].type = REFERENCE;		\
-  strcpy(instr->argv[1].reference,argv[1]);
+  instr->argv[i].type = REFERENCE;		\
+  strcpy(instr->argv[i].reference,argv[i]);
 
 #define IMM_ARG(i)				\
-  instr->argv[1].type = VALUE;			\
-  instr->argv[1].value = atoi(argv[1]);
+  instr->argv[i].type = VALUE;			\
+  instr->argv[i].value = atoi(argv[i]);
 
 uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]);
 
