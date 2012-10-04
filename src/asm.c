@@ -187,7 +187,7 @@ struct asm_binary* asm_parse_file(const char* file){
   }
 
   //Consistency check
-  assert(loc == bin->size);
+  assert(bin->size == ptr - bin->binary);
 
   list_delete(entry_list);
   list_delete(label_list);
