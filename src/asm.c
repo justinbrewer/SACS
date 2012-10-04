@@ -10,6 +10,8 @@
 
 #define MAX_LINE_LENGTH 256
 
+uint32_t _parse_asciiz(char* in, char* out);
+
 /** \brief Generates a binary from the given source file
 
     The assembling process consists of three passes. The first pass iterates
@@ -87,7 +89,9 @@ struct asm_binary* asm_parse_file(const char* file){
 	else if(strcmp("asciiz",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
-	  entry.size = 0;
+
+	  token = strtok(NULL,"\"");
+	  entry.size = _parse_asciiz(token,(char*)&entry.data);
 
 	  list_add(entry_list,&entry);
 	  loc += entry.size;
@@ -213,4 +217,38 @@ int _delete_binary(struct asm_binary* bin){
     free(bin->binary);
   }
   free(bin);
+}
+
+uint32_t _parse_asciiz(char* in, char* out){
+  char c;
+  uint32_t size = 0;
+
+  while(c = *in++){
+    switch(c){
+    case '\\': //Special Characters
+
+      switch(*in++){
+      case 'n':
+	*out++ = '\n';
+	break;
+
+      case '\\':
+	*out++ = '\\';
+	break;
+      }
+
+      size++;
+      break;
+
+    default:
+      *out++ = c;
+      size++;
+      break;
+    }
+  }
+
+  *out++ = 0;
+  size++;
+
+  return size;
 }
