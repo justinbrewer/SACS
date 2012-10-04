@@ -80,7 +80,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  entry.type = DATA;
 	  entry.loc = loc;
 	  entry.size = 4;
-	  entry.data = atoi(strtok(NULL," \t\n\v\f\r"));
+	  *(uint32_t*)(&entry.data) = atoi(strtok(NULL," \t\n\v\f\r"));
 	  list_add(entry_list,&entry);
 	  loc += entry.size;
 	}

@@ -6,6 +6,7 @@
 
 #define MAX_TOKEN_LEN  16
 #define MAX_ARGC 4
+#define MAX_ENTRY_SIZE 1024
 
 typedef enum { VALUE, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
@@ -31,7 +32,7 @@ struct asm_entry {
 
   union {
     struct asm_instr instr;
-    uint32_t data;
+    uint8_t data[MAX_ENTRY_SIZE];
   };
 };
 
