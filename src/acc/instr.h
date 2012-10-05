@@ -1,3 +1,0 @@
-#pragma once
-
-typedef enum { END=0x00, LOAD=0x01, STOR=0x02, ADD=0x03, MUL=0x04, PRNT=0x05 } acc_instr;
