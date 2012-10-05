@@ -11,7 +11,7 @@ struct list* list_create(uint32_t size, size_t entry_size){
   l->data = malloc(size*entry_size);
 }
 
-int list_delete(struct list* l){
+void list_delete(struct list* l){
   free(l->data);
   free(l);
 }

@@ -11,6 +11,6 @@ struct list {
 };
 
 struct list* list_create(uint32_t size, size_t entry_size);
-int list_delete(struct list* l);
+void list_delete(struct list* l);
 uint32_t list_add(struct list* l, void* data);
 void* list_get(struct list* l, uint32_t index);
