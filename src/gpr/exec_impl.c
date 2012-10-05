@@ -76,4 +76,6 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 
     reg[0] = 0; //This sucks
   }
+
+  return 0;
 }
