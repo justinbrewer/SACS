@@ -25,8 +25,8 @@ struct gpr_instr_i_t {
 };
 
 struct gpr_instr_j_t {
-  unsigned int op   :  6;
-  unsigned int addr : 26;
+  unsigned int op     :  6;
+  signed   int offset : 26;
 };
 
 union gpr_instr_t {

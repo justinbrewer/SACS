@@ -173,7 +173,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
 
   case B:
     res.j.op = instr->opcode;
-    res.j.addr = instr->argv[0].value;
+    res.j.offset = instr->argv[0].value;
     break;
 
   case BEQZ:

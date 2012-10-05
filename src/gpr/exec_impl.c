@@ -44,24 +44,24 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
       break;
 
     case B:
-      pc = text + ir.j.addr;
+      pc += ir.j.offset<<2;
       break;
 
     case BEQZ:
       if(reg[ir.i.rs] == 0){
-	pc = text + ir.i.offset;
+	pc += ir.i.offset<<2;
       }
       break;
 
     case BGE:
       if(reg[ir.i.rd] >= reg[ir.i.rs]){
-	pc = text + ir.i.offset;
+	pc += ir.i.offset<<2;
       }
       break;
 
     case BNE:
       if(reg[ir.i.rd] != reg[ir.i.rs]){
-	pc = text + ir.i.offset;
+	pc += ir.i.offset<<2;
       }
       break;
 
