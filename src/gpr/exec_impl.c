@@ -16,60 +16,60 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 
     case SYSCALL:
       switch(reg[2]){
-      case 4:
+      case 4: //Print string
 	printf("%s",(char*)mem_translate_addr(reg[4]));
 	break;
 
-      case 8:
+      case 8: //Read string
 	scanf("%s",(char*)mem_translate_addr(reg[4]));
 	break;
 
-      case 10:
+      case 10: //Exit
 	running = 0;
 	break;
       }
 
       break;
 
-    case LA:
+    case LA: //Load address
       reg[ir.i.rd] = data + ir.i.offset;
       break;
 
-    case LB:
+    case LB: //Load byte
       reg[ir.i.rd] = mem_read8(reg[ir.i.rs] + ir.i.offset);
       break;
 
-    case LI:
+    case LI: //Load immediate
       reg[ir.i.rd] = ir.i.offset;
       break;
 
-    case B:
+    case B: //Branch
       pc = text + ir.j.addr;
       break;
 
-    case BEQZ:
+    case BEQZ: //Branch if rs = 0
       if(reg[ir.i.rs] == 0){
 	pc = text + ir.i.offset;
       }
       break;
 
-    case BGE:
+    case BGE: //Branch if rd >= rs
       if(reg[ir.i.rd] >= reg[ir.i.rs]){
 	pc = text + ir.i.offset;
       }
       break;
 
-    case BNE:
+    case BNE: //Branch if rd != rs
       if(reg[ir.i.rd] != reg[ir.i.rs]){
 	pc = text + ir.i.offset;
       }
       break;
 
-    case ADDI:
+    case ADDI: //rd = rs + imm
       reg[ir.i.rd] = reg[ir.i.rs] + ir.i.offset;
       break;
 
-    case SUBI:
+    case SUBI: //rd = rs - imm
       reg[ir.i.rd] = reg[ir.i.rs] - ir.i.offset;
       break;
     }
