@@ -21,7 +21,7 @@ struct gpr_instr_i_t {
   unsigned int op     :  6;
   unsigned int rs     :  5;
   unsigned int rd     :  5;
-  unsigned int offset : 16;
+  signed   int offset : 16;
 };
 
 struct gpr_instr_j_t {
