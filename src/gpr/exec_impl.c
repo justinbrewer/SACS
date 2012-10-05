@@ -5,8 +5,6 @@
 #include <stdio.h>
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
-  int i;
-  char *str;
   uint32_t pc = start, running = 1, reg[32] = {0};
   union gpr_instr_t ir;
 
