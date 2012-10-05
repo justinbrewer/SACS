@@ -9,6 +9,7 @@ struct list* list_create(uint32_t size, size_t entry_size){
   l->ptr = 0;
   l->entry_size = entry_size;
   l->data = malloc(size*entry_size);
+  return l;
 }
 
 void list_delete(struct list* l){
