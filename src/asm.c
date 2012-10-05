@@ -29,6 +29,7 @@ struct asm_binary* asm_parse_file(const char* file){
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
   char* token, *operator;
   uint32_t loc = 0, text_segment, data_segment, label_base = 0;
+  asm_segment current_segment;
   struct asm_label label, *labelptr;
   struct list* label_list = list_create(16,sizeof(struct asm_label));
   struct asm_entry entry, *entryptr;
@@ -60,6 +61,7 @@ struct asm_binary* asm_parse_file(const char* file){
       // Labels
       if(token[toklen-1] == ':'){
 	token[toklen-1] = 0;
+	label.segment = current_segment;
 	label.loc = loc - label_base;
 	strcpy(label.name,token);
 	list_add(label_list,&label);
@@ -73,10 +75,12 @@ struct asm_binary* asm_parse_file(const char* file){
 	if(strcmp("text",token) == 0){
 	  text_segment = loc;
 	  label_base = loc;
+	  current_segment = TEXT_SEG;
 	}
 	else if(strcmp("data",token) == 0){
 	  data_segment = loc;
 	  label_base = loc;
+	  current_segment = DATA_SEG;
 	}
 	else if(strcmp("word",token) == 0){
 	  entry.type = DATA;
@@ -151,7 +155,17 @@ struct asm_binary* asm_parse_file(const char* file){
 
 	if(strcmp(instr->argv[j].reference,labelptr->name) == 0){
 	  instr->argv[j].type = VALUE;
-	  instr->argv[j].value = labelptr->loc;
+
+	  //Text offsets should be relative, data absolute
+	  switch(labelptr->segment){
+	  case TEXT_SEG:
+	    instr->argv[j].value = (labelptr->loc - entryptr->loc - 4) >> 2;
+	    break;
+	  case DATA_SEG:
+	    instr->argv[j].value = labelptr->loc;
+	    break;
+	  }
+
 	  break;
 	}
       }

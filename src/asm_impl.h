@@ -10,6 +10,7 @@
 
 typedef enum { VALUE, REFERENCE } asm_arg_type;
 typedef enum { INSTR, DATA } asm_entry_type;
+typedef enum { TEXT_SEG, DATA_SEG } asm_segment;
 
 struct asm_arg {
   asm_arg_type type;
@@ -37,6 +38,7 @@ struct asm_entry {
 };
 
 struct asm_label {
+  asm_segment segment;
   uint32_t loc;
   char name[MAX_TOKEN_LEN];
 };
