@@ -3,8 +3,11 @@
 #include "mem.h"
 
 #include <stdio.h>
+#include <string.h>
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
+  int i;
+  char *str;
   uint32_t pc = start, running = 1, reg[32] = {0};
   union gpr_instr_t ir;
 
@@ -21,7 +24,13 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 	break;
 
       case 8: //Read string
-	scanf("%s",(char*)mem_translate_addr(reg[4]));
+	str = (char*)mem_translate_addr(reg[4]);
+	scanf("%s",str);
+
+	//scanf does not incude the newline character, but we need it
+	i = strlen(str);
+	str[i] = '\n';
+	str[i+1] = 0;
 	break;
 
       case 10: //Exit
