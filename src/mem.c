@@ -23,7 +23,7 @@ struct mem_node {
 typedef enum { INSUFFICIENT_SPACE=1 } mem_error;
 
 struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* parent);
-int _delete_node(struct mem_node* node);
+void _delete_node(struct mem_node* node);
 struct mem_node* _get_node(uint32_t loc);
 uint32_t _dyn_alloc(struct mem_node* node, uint32_t size, mem_alloc_flags flags);
 int _collapse_node(struct mem_node* node);
@@ -169,7 +169,7 @@ struct mem_node* _create_node(uint32_t size, uint32_t loc, struct mem_node* pare
   return node;
 }
 
-int _delete_node(struct mem_node* node){
+void _delete_node(struct mem_node* node){
   if(node->left != 0){
     _delete_node(node->left);
   }
@@ -202,6 +202,9 @@ struct mem_node* __get_node(struct mem_node* node, uint32_t loc){
   case FREE:
   case FULL:
     return node;
+
+  default:
+    return 0;
   }
 }
 
