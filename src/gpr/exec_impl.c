@@ -3,7 +3,6 @@
 #include "mem.h"
 
 #include <stdio.h>
-#include <string.h>
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
   int i;
@@ -20,17 +19,11 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
     case SYSCALL:
       switch(reg[2]){
       case 4: //Print string
-	printf("%s",(char*)mem_translate_addr(reg[4]));
+	fputs((char*)mem_translate_addr(reg[4]), stdout);
 	break;
 
       case 8: //Read string
-	str = (char*)mem_translate_addr(reg[4]);
-	scanf("%s",str);
-
-	//scanf does not incude the newline character, but we need it
-	i = strlen(str);
-	str[i] = '\n';
-	str[i+1] = 0;
+	fgets((char*)mem_translate_addr(reg[4]), reg[5], stdin);
 	break;
 
       case 10: //Exit
