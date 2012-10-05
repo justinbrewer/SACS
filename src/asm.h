@@ -12,4 +12,4 @@ struct asm_binary {
 
 struct asm_binary* asm_parse_file(const char* file);
 
-int asm_free_binary(struct asm_binary* bin);
+void asm_free_binary(struct asm_binary* bin);

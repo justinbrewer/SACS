@@ -42,7 +42,7 @@ struct asm_label {
 };
 
 struct asm_binary* _create_binary();
-int _delete_binary(struct asm_binary* bin);
+void _delete_binary(struct asm_binary* bin);
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]);
 uint32_t asm_collapse_instr(struct asm_instr* instr);

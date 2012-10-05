@@ -202,8 +202,8 @@ struct asm_binary* asm_parse_file(const char* file){
 /** \brief Properly cleans up an asm_binary struct
     \param bin Binary to free
  */
-int asm_free_binary(struct asm_binary* bin){
-  return _delete_binary(bin);
+void asm_free_binary(struct asm_binary* bin){
+  _delete_binary(bin);
 }
 
 struct asm_binary* _create_binary(){
@@ -212,7 +212,7 @@ struct asm_binary* _create_binary(){
   return bin;
 }
 
-int _delete_binary(struct asm_binary* bin){
+void _delete_binary(struct asm_binary* bin){
   if(bin->binary != 0){
     free(bin->binary);
   }
@@ -223,7 +223,7 @@ uint32_t _parse_asciiz(char* in, char* out){
   char c;
   uint32_t size = 0;
 
-  while(c = *in++){
+  while((c = *in++)){
     switch(c){
     case '\\': //Special Characters
 
