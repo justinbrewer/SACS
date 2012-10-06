@@ -8,8 +8,10 @@ BUILDDIR = build
 
 SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec_impl.o
 
-all: init sacs
+MACHINE ?= gpr
 
+all: init sacs
+	mv $(BUILDDIR)/sacs $(MACHINE)Sim
 init:
 	mkdir -p $(OBJDIR)
 	mkdir -p $(BUILDDIR)
@@ -18,7 +20,7 @@ sacs: $(SACSOBJ)
 	$(LL) $(LFLAGS) -o $(BUILDDIR)/sacs $(SACSOBJ)
 
 clean:
-	rm -rf $(OBJDIR) $(BUILDDIR) doc
+	rm -rf $(OBJDIR) $(BUILDDIR) gprSim
 
 $(OBJDIR)/main.o: src/asm.h src/mem.h src/exec.h src/main.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o src/main.c
