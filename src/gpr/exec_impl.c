@@ -89,7 +89,7 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
     reg[0] = 0; //This sucks
   }
 
-  printf("\n=== Statistics ===\n\nC: %i\nIC: %i\n",c,ic);
+  printf("\n=== Statistics ===\n\nC: %i\nIC: %i\nSpeed-up: %f\n", c, ic, 8*(float)ic/c);
 
   return 0;
 }
