@@ -1,5 +1,5 @@
 #include "exec.h"
-#include "gpr/instr.h"
+#include "instr.h"
 #include "mem.h"
 
 #include <stdio.h>

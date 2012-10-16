@@ -1,6 +1,6 @@
 #include "asm.h"
 #include "asm_impl.h"
-#include "gpr/instr.h"
+#include "instr.h"
 
 #include <stdlib.h>
 #include <stdio.h>
