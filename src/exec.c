@@ -96,6 +96,13 @@ void exec_pipe_id(struct exec_state_t* state){
     out->mem_op = MEM_NOP;
     out->reg_dest = in->ir.i.rd;
     break;
+
+  case LI:
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = in->ir.i.rd;
+    out->reg_val = in->ir.i.offset;
+    break;
   }
 }
 
