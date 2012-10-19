@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef enum { ALU_NOP=0x00, ALU_ADD=0x01 } exec_alu_op_t;
+typedef enum { ALU_NOP=0x00, ALU_ADD=0x01, ALU_SUB=0x02 } exec_alu_op_t;
 typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
 
 struct exec_pipe_ifid_t {
@@ -113,6 +113,22 @@ void exec_pipe_id(struct exec_state_t* state){
     out->reg_dest = in->ir.i.rd;
     out->reg_val = in->ir.i.offset;
     break;
+
+  case ADDI:
+    out->alu_op = ALU_ADD;
+    out->alu_in1 = state->reg[in->ir.i.rs];
+    out->alu_in2 = in->ir.i.offset;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = in->ir.i.rd;
+    break;
+
+  case SUBI:
+    out->alu_op = ALU_SUB;
+    out->alu_in1 = state->reg[in->ir.i.rs];
+    out->alu_in2 = in->ir.i.offset;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = in->ir.i.rd;
+    break;
   }
 }
 
@@ -132,6 +148,10 @@ void exec_pipe_ex(struct exec_state_t* state){
 
   case ALU_ADD:
     out->mem_addr = out->reg_val = in->alu_in1 + in->alu_in2;
+    break;
+
+  case ALU_SUB:
+    out->mem_addr = out->reg_val = in->alu_in1 - in->alu_in2;
     break;
   }
 }
