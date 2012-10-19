@@ -43,6 +43,7 @@ struct exec_state_t {
   uint32_t text;
   uint32_t data;
   uint32_t reg[32];
+  uint32_t stall;
   struct exec_pipe_ifid_t if_id;
   struct exec_pipe_idex_t id_ex;
   struct exec_pipe_exmem_t ex_mem;
@@ -76,8 +77,13 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 void exec_pipe_if(struct exec_state_t* state){
   struct exec_pipe_ifid_t* out = &state->if_id;
 
-  out->ir.u = mem_read32(state->pc);
-  state->pc += 4;
+  if(state->stall == 0){
+    out->ir.u = mem_read32(state->pc);
+    state->pc += 4;
+  } else {
+    state->stall--;
+    out->ir.u = 0;
+  }
 }
 
 void exec_pipe_id(struct exec_state_t* state){
@@ -112,6 +118,14 @@ void exec_pipe_id(struct exec_state_t* state){
     out->mem_op = MEM_NOP;
     out->reg_dest = in->ir.i.rd;
     out->reg_val = in->ir.i.offset;
+    break;
+
+  case B:
+    state->stall = 1;
+    state->pc += in->ir.j.offset<<2;
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
     break;
 
   case ADDI:
