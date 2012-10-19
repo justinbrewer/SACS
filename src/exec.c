@@ -47,11 +47,11 @@ struct exec_state_t {
   struct exec_pipe_memwb_t mem_wb;
 };
 
-void exec_pipe_if(struct exec_state_t& state);
-void exec_pipe_id(struct exec_state_t& state);
-void exec_pipe_ex(struct exec_state_t& state);
-void exec_pipe_mem(struct exec_state_t& state);
-void exec_pipe_wb(struct exec_state_t& state);
+void exec_pipe_if(struct exec_state_t* state);
+void exec_pipe_id(struct exec_state_t* state);
+void exec_pipe_ex(struct exec_state_t* state);
+void exec_pipe_mem(struct exec_state_t* state);
+void exec_pipe_wb(struct exec_state_t* state);
 
 int exec_run(uint32_t start, uint32_t text, uint32_t data){
   struct exec_state_t state = {0};
@@ -61,77 +61,77 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
   state.data = data;
 
   while(state.running){
-    exec_pipe_wb(state);
-    exec_pipe_mem(state);
-    exec_pipe_ex(state);
-    exec_pipe_id(state);
-    exec_pipe_if(state);
+    exec_pipe_wb(&state);
+    exec_pipe_mem(&state);
+    exec_pipe_ex(&state);
+    exec_pipe_id(&state);
+    exec_pipe_if(&state);
   }
 
   return 0;
 }
 
-void exec_pipe_if(struct exec_state_t& state){
-  struct exec_pipe_ifid_t& out = state.if_id;
+void exec_pipe_if(struct exec_state_t* state){
+  struct exec_pipe_ifid_t* out = &state->if_id;
 
-  out.ir.u = mem_read32(pc);
-  pc += 4;
+  out->ir.u = mem_read32(state->pc);
+  state->pc += 4;
 }
 
-void exec_pipe_id(struct exec_state_t& state){
-  struct exec_pipe_ifid_t& in = state.if_id;
-  struct exec_pipe_idex_t& out = state.id_ex;
+void exec_pipe_id(struct exec_state_t* state){
+  struct exec_pipe_ifid_t* in = &state->if_id;
+  struct exec_pipe_idex_t* out = &state->id_ex;
 
-  switch(in.ir.j.op){
+  switch(in->ir.j.op){
   case NOP:
-    out.alu_op = ALU_NOP;
-    out.mem_op = MEM_NOP;
-    out.reg_dest = 0;
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
     break;
 
   case LA:
-    out.alu_op = ALU_ADD;
-    out.alu_in1 = state.data;
-    out.alu_in2 = in.ir.i.offset;
-    out.mem_op = MEM_NOP;
-    out.reg_dest = in.ir.i.rd;
+    out->alu_op = ALU_ADD;
+    out->alu_in1 = state->data;
+    out->alu_in2 = in->ir.i.offset;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = in->ir.i.rd;
     break;
   }
 }
 
-void exec_pipe_ex(struct exec_state_t& state){
-  struct exec_pipe_idex_t& in = state.id_ex;
-  struct exec_pipe_exmem_t& out = state.ex_mem;
+void exec_pipe_ex(struct exec_state_t* state){
+  struct exec_pipe_idex_t* in = &state->id_ex;
+  struct exec_pipe_exmem_t* out = &state->ex_mem;
 
-  switch(in.alu_op){
+  switch(in->alu_op){
   case ALU_NOP:
     break;
 
   case ALU_ADD:
-    out.mem_val = out.reg_val = in.alu_in1 + in.alu_in2;
+    out->mem_val = out->reg_val = in->alu_in1 + in->alu_in2;
     break;
   }
 }
 
-void exec_pipe_mem(struct exec_state_t& state){
-  struct exec_pipe_exmem_t& in = state.ex_mem;
-  struct exec_pipe_memwb_t& out = state.mem_wb;
+void exec_pipe_mem(struct exec_state_t* state){
+  struct exec_pipe_exmem_t* in = &state->ex_mem;
+  struct exec_pipe_memwb_t* out = &state->mem_wb;
 
-  switch(in.mem_op){
+  switch(in->mem_op){
   case MEM_NOP:
     break;
   }
 }
 
-void exec_pipe_wb(struct exec_state_t& state){
-  struct exec_pipe_memwb_t& in = state.mem_wb;
+void exec_pipe_wb(struct exec_state_t* state){
+  struct exec_pipe_memwb_t* in = &state->mem_wb;
 
-  switch(in.reg_dest){
+  switch(in->reg_dest){
   case 0:
     break;
 
   default:
-    state.reg[in.reg_dest] = in.reg_val;
+    state->reg[in->reg_dest] = in->reg_val;
     break;
   }
 }
