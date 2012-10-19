@@ -3,24 +3,36 @@
 
 #include <stdint.h>
 
+typedef enum { ALU_NOP=0x00, } exec_alu_op_t;
+typedef enum { MEM_NOP=0x00, MEM_READ=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
+
 struct exec_pipe_ifid_t {
   union gpr_instr_t ir;
 };
 
 struct exec_pipe_idex_t {
-  union gpr_instr_t ir;
+  exec_alu_op_t alu_op;
   uint32_t alu_in1;
   uint32_t alu_in2;
+
+  exec_mem_op_t mem_op;
+  uint32_t mem_value;
+
+  uint32_t reg_dest;
+  uint32_t reg_val;
 };
 
 struct exec_pipe_exmem_t {
-  union gpr_instr_t ir;
-  uint32_t alu_out;
+  exec_mem_op_t mem_op;
+  uint32_t mem_value;
+
+  uint32_t reg_dest;
+  uint32_t reg_val;
 };
 
 struct exec_pipe_memwb_t {
-  union gpr_instr_t ir;
-  uint32_t alu_out;
+  uint32_t reg_dest;
+  uint32_t reg_val;
 };
 
 struct exec_state_t {
@@ -59,3 +71,51 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
   return 0;
 }
 
+void exec_pipe_if(struct exec_state_t& state){
+  struct exec_pipe_ifid_t& out = state.if_id;
+
+  out.ir.u = mem_read32(pc);
+  pc += 4;
+}
+
+void exec_pipe_id(struct exec_state_t& state){
+  struct exec_pipe_ifid_t& in = state.if_id;
+  struct exec_pipe_idex_t& out = state.id_ex;
+
+  switch(in.ir.j.op){
+  case NOP:
+    out.alu_op = ALU_NOP;
+    out.mem_op = MEM_NOP;
+    out.reg_dest = 0;
+    break;
+  }
+}
+
+void exec_pipe_ex(struct exec_state_t& state){
+  struct exec_pipe_idex_t& in = state.id_ex;
+  struct exec_pipe_exmem_t& out = state.ex_mem;
+
+  switch(in.alu_op){
+  case NOP:
+    break;
+  }
+}
+
+void exec_pipe_mem(struct exec_state_t& state){
+  struct exec_pipe_exmem_t& in = state.ex_mem;
+  struct exec_pipe_memwb_t& out = state.mem_wb;
+
+  switch(in.mem_op){
+  case NOP:
+    break;
+  }
+}
+
+void exec_pipe_wb(struct exec_state_t& state){
+  struct exec_pipe_memwb_t& in = state.mem_wb;
+
+  switch(in.reg_dest){
+  case 0:
+    break;
+  }
+}
