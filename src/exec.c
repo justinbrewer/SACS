@@ -123,6 +123,40 @@ void exec_pipe_id(struct exec_state_t* state){
   case B:
     state->stall = 1;
     state->pc += in->ir.j.offset<<2;
+
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
+    break;
+
+  case BEQZ:
+    state->stall = 1;
+    if(state->reg[in->ir.i.rs] == 0){
+      state->pc += in->ir.i.offset<<2;
+    }
+
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
+    break;
+
+  case BGE:
+    state->stall = 1;
+    if(state->reg[in->ir.i.rd] >= state->reg[in->ir.i.rs]){
+      state->pc += in->ir.i.offset<<2;
+    }
+
+    out->alu_op = ALU_NOP;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
+    break;
+
+  case BNE:
+    state->stall = 1;
+    if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
+      state->pc += in->ir.i.offset<<2;
+    }
+
     out->alu_op = ALU_NOP;
     out->mem_op = MEM_NOP;
     out->reg_dest = 0;
