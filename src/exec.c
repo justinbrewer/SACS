@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef enum { ALU_NOP=0x00, ALU_ADD=0x01 } exec_alu_op_t;
-typedef enum { MEM_NOP=0x00, MEM_READ=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
+typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
 
 struct exec_pipe_ifid_t {
   union gpr_instr_t ir;
@@ -16,6 +16,7 @@ struct exec_pipe_idex_t {
   uint32_t alu_in2;
 
   exec_mem_op_t mem_op;
+  uint32_t mem_addr;
   uint32_t mem_val;
 
   uint32_t reg_dest;
@@ -24,6 +25,7 @@ struct exec_pipe_idex_t {
 
 struct exec_pipe_exmem_t {
   exec_mem_op_t mem_op;
+  uint32_t mem_addr;
   uint32_t mem_val;
 
   uint32_t reg_dest;
@@ -97,6 +99,14 @@ void exec_pipe_id(struct exec_state_t* state){
     out->reg_dest = in->ir.i.rd;
     break;
 
+  case LB:
+    out->alu_op = ALU_ADD;
+    out->alu_in1 = in->ir.i.rs;
+    out->alu_in2 = in->ir.i.offset;
+    out->mem_op = MEM_RB;
+    out->reg_dest = in->ir.i.rd;
+    break;
+
   case LI:
     out->alu_op = ALU_NOP;
     out->mem_op = MEM_NOP;
@@ -111,6 +121,7 @@ void exec_pipe_ex(struct exec_state_t* state){
   struct exec_pipe_exmem_t* out = &state->ex_mem;
 
   out->mem_op = in->mem_op;
+  out->mem_addr = in->mem_addr;
   out->mem_val = in->mem_val;
   out->reg_dest = in->reg_dest;
   out->reg_val = in->reg_val;
@@ -120,7 +131,7 @@ void exec_pipe_ex(struct exec_state_t* state){
     break;
 
   case ALU_ADD:
-    out->mem_val = out->reg_val = in->alu_in1 + in->alu_in2;
+    out->mem_addr = out->reg_val = in->alu_in1 + in->alu_in2;
     break;
   }
 }
@@ -134,6 +145,10 @@ void exec_pipe_mem(struct exec_state_t* state){
 
   switch(in->mem_op){
   case MEM_NOP:
+    break;
+
+  case MEM_RB:
+    out->reg_val = mem_read8(in->mem_addr);
     break;
   }
 }
