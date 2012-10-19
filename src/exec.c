@@ -103,6 +103,11 @@ void exec_pipe_ex(struct exec_state_t* state){
   struct exec_pipe_idex_t* in = &state->id_ex;
   struct exec_pipe_exmem_t* out = &state->ex_mem;
 
+  out->mem_op = in->mem_op;
+  out->mem_val = in->mem_val;
+  out->reg_dest = in->reg_dest;
+  out->reg_val = in->reg_val;
+
   switch(in->alu_op){
   case ALU_NOP:
     break;
@@ -116,6 +121,9 @@ void exec_pipe_ex(struct exec_state_t* state){
 void exec_pipe_mem(struct exec_state_t* state){
   struct exec_pipe_exmem_t* in = &state->ex_mem;
   struct exec_pipe_memwb_t* out = &state->mem_wb;
+
+  out->reg_dest = in->reg_dest;
+  out->reg_val = in->reg_val;
 
   switch(in->mem_op){
   case MEM_NOP:
