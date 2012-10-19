@@ -31,6 +31,9 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
 
       break;
 
+    case NOP:
+      break;
+
     case LA:
       reg[ir.i.rd] = data + ir.i.offset;
       break;
