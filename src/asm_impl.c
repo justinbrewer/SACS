@@ -37,6 +37,12 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     CHECK_ARGC;
   }
 
+  else if(strcmp(operator,"nop") == 0){
+    instr->opcode = NOP;
+    instr->argc = 0;
+    CHECK_ARGC;
+  }
+
   else if(strcmp(operator,"la") == 0){
     instr->opcode = LA;
     instr->argc = 2;
@@ -158,6 +164,7 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
 
   switch(instr->opcode){
   case SYSCALL:
+  case NOP:
     res.j.op = instr->opcode;
     break;
 
