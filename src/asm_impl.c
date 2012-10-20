@@ -130,6 +130,16 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     LABEL_ARG(2);
   }
 
+  else if(strcmp(operator,"add") == 0){
+    instr->opcode = ADD;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    REGISTER_ARG(2);
+  }
+
   else if(strcmp(operator,"addi") == 0){
     instr->opcode = ADDI;
     instr->argc = 3;
@@ -138,6 +148,16 @@ struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC]
     REGISTER_ARG(0);
     REGISTER_ARG(1);
     IMM_ARG(2);
+  }
+
+  else if(strcmp(operator,"sub") == 0){
+    instr->opcode = SUB;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    REGISTER_ARG(2);
   }
 
   else if(strcmp(operator,"subi") == 0){
@@ -166,6 +186,16 @@ uint32_t asm_collapse_instr(struct asm_instr* instr){
   case SYSCALL:
   case NOP:
     res.j.op = instr->opcode;
+    break;
+
+  case ADD:
+  case SUB:
+    res.r.op = instr->opcode;
+    res.r.rs = instr->argv[1].value;
+    res.r.rt = instr->argv[2].value;
+    res.r.rd = instr->argv[0].value;
+    res.r.shift = 0;
+    res.r.func = 0;
     break;
 
   case ADDI:
