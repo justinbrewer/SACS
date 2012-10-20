@@ -115,7 +115,7 @@ void exec_pipe_id(struct exec_state_t* state){
     out->mem_addr = state->reg[4];
     out->mem_val = 0;
 
-    out->reg_dest = 0;
+    out->reg_dest = 2;
     out->reg_val = 0;
     break;
 
