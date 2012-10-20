@@ -84,7 +84,6 @@ void exec_pipe_if(struct exec_state_t* state){
     state->pc += 4;
   } else {
     state->stall--;
-    out->ir.u = 0;
   }
 }
 
@@ -140,6 +139,7 @@ void exec_pipe_id(struct exec_state_t* state){
   case B:
     state->stall = 1;
     state->pc += in->ir.j.offset<<2;
+    in->ir.u = 0;
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
@@ -151,6 +151,7 @@ void exec_pipe_id(struct exec_state_t* state){
     if(state->reg[in->ir.i.rs] == 0){
       state->pc += in->ir.i.offset<<2;
     }
+    in->ir.u = 0;
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
@@ -162,6 +163,7 @@ void exec_pipe_id(struct exec_state_t* state){
     if(state->reg[in->ir.i.rd] >= state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
+    in->ir.u = 0;
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
@@ -173,6 +175,7 @@ void exec_pipe_id(struct exec_state_t* state){
     if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
+    in->ir.u = 0;
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
