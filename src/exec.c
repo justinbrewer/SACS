@@ -1,9 +1,11 @@
 #include "exec.h"
 #include "instr.h"
+#include "mem.h"
 
 #include <stdint.h>
+#include <stdio.h>
 
-typedef enum { ALU_NOP=0x00, ALU_ADD=0x01, ALU_SUB=0x02 } exec_alu_op_t;
+typedef enum { ALU_NOP=0x00, ALU_ADD=0x01, ALU_SUB=0x02, ALU__SYSCALL=0xFF } exec_alu_op_t;
 typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
 
 struct exec_pipe_ifid_t {
@@ -95,6 +97,16 @@ void exec_pipe_id(struct exec_state_t* state){
     out->alu_op = ALU_NOP;
     out->mem_op = MEM_NOP;
     out->reg_dest = 0;
+    break;
+
+  case SYSCALL: //A bit ugly
+    out->alu_op = ALU__SYSCALL;
+    out->mem_op = MEM_NOP;
+    out->reg_dest = 0;
+
+    out->alu_in1 = state->reg[2];
+    out->mem_addr = state->reg[4];
+    out->alu_in2 = state->reg[5];
     break;
 
   case LA:
@@ -201,6 +213,19 @@ void exec_pipe_ex(struct exec_state_t* state){
   case ALU_SUB:
     out->mem_addr = out->reg_val = in->alu_in1 - in->alu_in2;
     break;
+
+  case ALU__SYSCALL:
+    switch(in->alu_in1){
+    case 4:
+      fputs((char*)mem_translate_addr(in->mem_addr), stdout);
+      break;
+    case 8:
+      fgets((char*)mem_translate_addr(in->mem_addr), in->alu_in2, stdin);
+      break;
+    case 10:
+      state->running = 0;
+      break;
+    }
   }
 }
 
