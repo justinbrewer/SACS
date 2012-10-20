@@ -101,7 +101,7 @@ void exec_pipe_if(struct exec_state_t* state){
   out->reg_dest = dest;				\
   out->reg_val = val;
 
-#define CHECK_RAW(r) (state->ex_mem.reg_dest == r || state->mem_wb.reg_dest == r)
+#define CHECK_RAW(r) (r && (state->ex_mem.reg_dest == r || state->mem_wb.reg_dest == r))
 
 #define STALL					\
   state->stall++;				\
