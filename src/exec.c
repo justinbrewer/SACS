@@ -98,6 +98,10 @@ void exec_pipe_if(struct exec_state_t* state){
   out->mem_addr = addr;				\
   out->mem_val = val;
 
+#define REG(dest, val)				\
+  out->reg_dest = dest;				\
+  out->reg_val = val;
+
 void exec_pipe_id(struct exec_state_t* state){
   struct exec_pipe_ifid_t* in = &state->if_id;
   struct exec_pipe_idex_t* out = &state->id_ex;
@@ -106,41 +110,31 @@ void exec_pipe_id(struct exec_state_t* state){
   case NOP:
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = 0;
-    out->reg_val = 0;
+    REG(0,0);
     break;
 
   case SYSCALL: //A bit ugly
     ALU(ALU__SYSCALL, state->reg[2], state->reg[5]);
     MEM(MEM_NOP, state->reg[4], 0);
-
-    out->reg_dest = 2;
-    out->reg_val = 0;
+    REG(2,0);
     break;
 
   case LA:
     ALU(ALU_ADD, state->data, in->ir.i.offset);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = in->ir.i.rd;
-    out->reg_val = 0;
+    REG(in->ir.i.rd,0);
     break;
 
   case LB:
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_RB,0,0);
-
-    out->reg_dest = in->ir.i.rd;
-    out->reg_val = 0;
+    REG(in->ir.i.rd,0);
     break;
 
   case LI:
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = in->ir.i.rd;
-    out->reg_val = in->ir.i.offset;
+    REG(in->ir.i.rd, in->ir.i.offset);
     break;
 
   case B:
@@ -149,9 +143,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = 0;
-    out->reg_val = 0;
+    REG(0,0);
     break;
 
   case BEQZ:
@@ -162,9 +154,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = 0;
-    out->reg_val = 0;
+    REG(0,0);
     break;
 
   case BGE:
@@ -175,9 +165,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = 0;
-    out->reg_val = 0;
+    REG(0,0);
     break;
 
   case BNE:
@@ -188,25 +176,19 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = 0;
-    out->reg_val = 0;
+    REG(0,0);
     break;
 
   case ADDI:
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = in->ir.i.rd;
-    out->reg_val = 0;
+    REG(in->ir.i.rd,0);
     break;
 
   case SUBI:
     ALU(ALU_SUB, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0,0);
-
-    out->reg_dest = in->ir.i.rd;
-    out->reg_val = 0;
+    REG(in->ir.i.rd,0);
     break;
   }
 }
