@@ -95,39 +95,65 @@ void exec_pipe_id(struct exec_state_t* state){
   switch(in->ir.j.op){
   case NOP:
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case SYSCALL: //A bit ugly
     out->alu_op = ALU__SYSCALL;
-    out->mem_op = MEM_NOP;
-    out->reg_dest = 0;
-
     out->alu_in1 = state->reg[2];
-    out->mem_addr = state->reg[4];
     out->alu_in2 = state->reg[5];
+
+    out->mem_op = MEM_NOP;
+    out->mem_addr = state->reg[4];
+    out->mem_val = 0;
+
+    out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case LA:
     out->alu_op = ALU_ADD;
     out->alu_in1 = state->data;
     out->alu_in2 = in->ir.i.offset;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = in->ir.i.rd;
+    out->reg_val = 0;
     break;
 
   case LB:
     out->alu_op = ALU_ADD;
     out->alu_in1 = state->reg[in->ir.i.rs];
     out->alu_in2 = in->ir.i.offset;
+
     out->mem_op = MEM_RB;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = in->ir.i.rd;
+    out->reg_val = 0;
     break;
 
   case LI:
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = in->ir.i.rd;
     out->reg_val = in->ir.i.offset;
     break;
@@ -137,8 +163,15 @@ void exec_pipe_id(struct exec_state_t* state){
     state->pc += in->ir.j.offset<<2;
 
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case BEQZ:
@@ -148,8 +181,15 @@ void exec_pipe_id(struct exec_state_t* state){
     }
 
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case BGE:
@@ -159,8 +199,15 @@ void exec_pipe_id(struct exec_state_t* state){
     }
 
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case BNE:
@@ -170,24 +217,41 @@ void exec_pipe_id(struct exec_state_t* state){
     }
 
     out->alu_op = ALU_NOP;
+    out->alu_in1 = 0;
+    out->alu_in2 = 0;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = 0;
+    out->reg_val = 0;
     break;
 
   case ADDI:
     out->alu_op = ALU_ADD;
     out->alu_in1 = state->reg[in->ir.i.rs];
     out->alu_in2 = in->ir.i.offset;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = in->ir.i.rd;
+    out->reg_val = 0;
     break;
 
   case SUBI:
     out->alu_op = ALU_SUB;
     out->alu_in1 = state->reg[in->ir.i.rs];
     out->alu_in2 = in->ir.i.offset;
+
     out->mem_op = MEM_NOP;
+    out->mem_addr = 0;
+    out->mem_val = 0;
+
     out->reg_dest = in->ir.i.rd;
+    out->reg_val = 0;
     break;
   }
 }
