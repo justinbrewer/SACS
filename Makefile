@@ -7,7 +7,7 @@ OBJDIR = obj
 TOBJDIR = tobj
 BUILDDIR = build
 
-SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec_impl.o
+SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec.o
 
 all: init sacs
 
@@ -49,8 +49,8 @@ $(OBJDIR)/asm.o: src/asm.h src/asm_impl.h src/asm.c
 $(OBJDIR)/asm_impl.o: src/asm.h src/asm_impl.h src/asm_impl.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/asm_impl.o src/asm_impl.c
 
-$(OBJDIR)/exec_impl.o: src/mem.h src/exec.h src/instr.h src/exec_impl.c
-	$(CC) $(CFLAGS) -o $(OBJDIR)/exec_impl.o src/exec_impl.c
+$(OBJDIR)/exec.o: src/mem.h src/exec.h src/instr.h src/exec.c
+	$(CC) $(CFLAGS) -o $(OBJDIR)/exec.o src/exec.c
 
 $(OBJDIR)/list.o: src/list.h src/list.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/list.o src/list.c
