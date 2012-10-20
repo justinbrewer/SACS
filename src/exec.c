@@ -119,7 +119,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
   case LB:
     out->alu_op = ALU_ADD;
-    out->alu_in1 = in->ir.i.rs;
+    out->alu_in1 = state->reg[in->ir.i.rs];
     out->alu_in2 = in->ir.i.offset;
     out->mem_op = MEM_RB;
     out->reg_dest = in->ir.i.rd;
