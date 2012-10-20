@@ -250,6 +250,9 @@ void exec_pipe_ex(struct exec_state_t* state){
 
   case ALU__SYSCALL:
     switch(in->alu_in1){
+    case 1:
+      printf("%d\n",in->mem_addr);
+      break;
     case 4:
       fputs((char*)mem_translate_addr(in->mem_addr), stdout);
       break;
