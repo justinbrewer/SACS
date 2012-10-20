@@ -101,6 +101,15 @@ void exec_pipe_if(struct exec_state_t* state){
   out->reg_dest = dest;				\
   out->reg_val = val;
 
+#define CHECK_RAW(r) (state->ex_mem.reg_dest == r || state->mem_wb.reg_dest == r)
+
+#define STALL					\
+  state->stall++;				\
+  ALU(ALU_NOP,0,0);				\
+  MEM(MEM_NOP,0,0);				\
+  REG(0,0);					\
+  break;
+
 void exec_pipe_id(struct exec_state_t* state){
   struct exec_pipe_ifid_t* in = &state->if_id;
   struct exec_pipe_idex_t* out = &state->id_ex;
@@ -113,6 +122,7 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case SYSCALL: //A bit ugly
+    if(CHECK_RAW(2) || CHECK_RAW(4) || CHECK_RAW(5)){ STALL; }
     ALU(ALU__SYSCALL, state->reg[2], state->reg[5]);
     MEM(MEM_NOP, state->reg[4], 0);
     REG(2,0);
@@ -125,6 +135,7 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case LB:
+    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_RB,0,0);
     REG(in->ir.i.rd,0);
@@ -147,6 +158,7 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case BEQZ:
+    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     state->stall = 1;
     if(state->reg[in->ir.i.rs] == 0){
       state->pc += in->ir.i.offset<<2;
@@ -159,6 +171,7 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case BGE:
+    if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
     state->stall = 1;
     if(state->reg[in->ir.i.rd] >= state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
@@ -171,6 +184,7 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case BNE:
+    if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
     state->stall = 1;
     if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
@@ -183,12 +197,14 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case ADDI:
+    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0,0);
     REG(in->ir.i.rd,0);
     break;
 
   case SUBI:
+    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_SUB, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0,0);
     REG(in->ir.i.rd,0);
