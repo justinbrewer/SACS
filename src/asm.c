@@ -28,7 +28,7 @@ struct asm_binary* asm_parse_file(const char* file){
   int i, j, k, toklen, argc;
   char buf[MAX_LINE_LENGTH], argv[MAX_ARGC][MAX_TOKEN_LEN];
   char* token, *operator;
-  uint32_t loc = 0, text_segment, data_segment, label_base = 0;
+  uint32_t loc = 0, text_segment=0, data_segment=0, label_base = 0;
   asm_segment current_segment;
   struct asm_label label, *labelptr;
   struct list* label_list = list_create(16,sizeof(struct asm_label));
