@@ -173,7 +173,7 @@ void exec_pipe_id(struct exec_state_t* state){
   case BGE:
     if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
     state->stall = 1;
-    if(state->reg[in->ir.i.rd] >= state->reg[in->ir.i.rs]){
+    if((int32_t)state->reg[in->ir.i.rd] >= (int32_t)state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
