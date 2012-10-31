@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef enum { ALU_NOP=0x00, ALU_ADD=0x01, ALU_SUB=0x02, ALU__SYSCALL=0xFF } exec_alu_op_t;
 typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
@@ -50,6 +52,7 @@ struct exec_state_t {
   struct exec_pipe_idex_t id_ex;
   struct exec_pipe_exmem_t ex_mem;
   struct exec_pipe_memwb_t mem_wb;
+  struct exec_stats_t* stats;
 };
 
 void exec_pipe_if(struct exec_state_t* state);
@@ -58,12 +61,16 @@ void exec_pipe_ex(struct exec_state_t* state);
 void exec_pipe_mem(struct exec_state_t* state);
 void exec_pipe_wb(struct exec_state_t* state);
 
-int exec_run(uint32_t start, uint32_t text, uint32_t data){
+struct exec_stats_t* exec_run(uint32_t start, uint32_t text, uint32_t data){
   struct exec_state_t state = {0};
   state.running = 1;
   state.pc = start;
   state.text = text;
   state.data = data;
+
+  struct exec_stats_t* stats = (struct exec_stats_t*)malloc(sizeof(struct exec_stats_t));
+  memset(stats,0,sizeof(struct exec_stats_t));
+  state.stats = stats;
 
   while(state.running){
     exec_pipe_wb(&state);
@@ -71,9 +78,11 @@ int exec_run(uint32_t start, uint32_t text, uint32_t data){
     exec_pipe_ex(&state);
     exec_pipe_id(&state);
     exec_pipe_if(&state);
+
+    stats->c++;
   }
 
-  return 0;
+  return stats;
 }
 
 void exec_pipe_if(struct exec_state_t* state){
@@ -82,6 +91,7 @@ void exec_pipe_if(struct exec_state_t* state){
   if(state->stall == 0){
     out->ir.u = mem_read32(state->pc);
     state->pc += 4;
+    state->stats->ic++;
   } else {
     state->stall--;
   }

@@ -20,7 +20,7 @@ int main(int argc, char** argv){
   assert(loc == 0x400000);
   memcpy(mem_translate_addr(loc),bin->binary,bin->size);
 
-  exec_run(loc,loc,loc+bin->data_segment);
+  struct exec_stats_t* stats = exec_run(loc,loc,loc+bin->data_segment);
 
   mem_cleanup();
   return 0;
