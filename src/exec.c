@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum { ALU_NOP=0x00, ALU_ADD=0x01, ALU_SUB=0x02, ALU__SYSCALL=0xFF } exec_alu_op_t;
+typedef enum { ALU_ADD=0x00, ALU_SUB=0x01, ALU__SYSCALL=0xFF } exec_alu_op_t;
 typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
 
 struct exec_pipe_ifid_t {
@@ -116,7 +116,7 @@ void exec_pipe_if(struct exec_state_t* state){
 
 #define STALL					\
   state->stall++;				\
-  ALU(ALU_NOP,0,0);				\
+  ALU(ALU_ADD,0,0);				\
   MEM(MEM_NOP,0);				\
   REG(0,0,0);					\
   break;
@@ -127,7 +127,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
   switch(in->ir.j.op){
   case NOP:
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,0,0);
     MEM(MEM_NOP,0);
     REG(0,0,0);
     break;
@@ -163,7 +163,7 @@ void exec_pipe_id(struct exec_state_t* state){
     state->pc += in->ir.j.offset<<2;
     in->ir.u = 0;
 
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,0,0);
     MEM(MEM_NOP,0);
     REG(0,0,0);
     break;
@@ -176,7 +176,7 @@ void exec_pipe_id(struct exec_state_t* state){
     }
     in->ir.u = 0;
 
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,0,0);
     MEM(MEM_NOP,0);
     REG(0,0,0);
     break;
@@ -189,7 +189,7 @@ void exec_pipe_id(struct exec_state_t* state){
     }
     in->ir.u = 0;
 
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,0,0);
     MEM(MEM_NOP,0);
     REG(0,0,0);
     break;
@@ -202,7 +202,7 @@ void exec_pipe_id(struct exec_state_t* state){
     }
     in->ir.u = 0;
 
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,0,0);
     MEM(MEM_NOP,0);
     REG(0,0,0);
     break;
@@ -246,9 +246,6 @@ void exec_pipe_ex(struct exec_state_t* state){
   out->rd = in->rd;
 
   switch(in->alu_op){
-  case ALU_NOP:
-    break;
-
   case ALU_ADD:
     out->alu_out = in->alu_in1 + in->alu_in2;
     break;
