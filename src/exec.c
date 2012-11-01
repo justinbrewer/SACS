@@ -8,7 +8,9 @@
 #include <string.h>
 
 typedef enum { ALU_ADD=0x00, ALU_SUB=0x01, ALU__SYSCALL=0xFF } exec_alu_op_t;
-typedef enum { MEM_NOP=0x00, MEM_RB=0x01, MEM_WRITE=0x02 } exec_mem_op_t;
+typedef enum { MEM_NOP=0x00,
+	       MEM_RB=0x10, MEM_RH=0x11, MEM_RW=0x12,
+	       MEM_WB=0x20, MEM_WH=0x21, MEM_WW=0x22 } exec_mem_op_t;
 
 struct exec_pipe_ifid_t {
   union gpr_instr_t ir;
