@@ -315,12 +315,7 @@ void exec_pipe_mem(struct exec_state_t* state){
 void exec_pipe_wb(struct exec_state_t* state){
   struct exec_pipe_memwb_t* in = &state->mem_wb;
 
-  switch(in->rd){
-  case 0:
-    break;
-
-  default:
+  if(in->rd){
     state->reg[in->rd] = in->alu_out;
-    break;
   }
 }
