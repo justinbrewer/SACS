@@ -236,33 +236,24 @@ void exec_pipe_id(struct exec_state_t* state){
   }
 }
 
+#define FORWARD(r,p)				\
+  if(in->r && (in->r == out->rd)){		\
+    if(out->mem_op & 0x10){			\
+      state->stall++;				\
+      MEM(MEM_NOP,0);				\
+      out->rd = 0;				\
+      return;					\
+    } else {					\
+      in->alu_in##p = out->alu_out;		\
+    }						\
+  }
+
 void exec_pipe_ex(struct exec_state_t* state){
   struct exec_pipe_idex_t* in = &state->id_ex;
   struct exec_pipe_exmem_t* out = &state->ex_mem;
 
-  if(in->rs && (in->rs == out->rd)){
-    if(out->mem_op & 0x10){
-      state->stall++;
-      out->mem_op = MEM_NOP;
-      out->mem_val = 0;
-      out->rd = 0;
-      return;
-    } else {
-      in->alu_in1 = out->alu_out;
-    }
-  }
-
-  if(in->rt && (in->rt == out->rd)){
-    if(out->mem_op & 0x10){
-      state->stall++;
-      out->mem_op = MEM_NOP;
-      out->mem_val = 0;
-      out->rd = 0;
-      return;
-    } else {
-      in->alu_in2 = out->alu_out;
-    }
-  }
+  FORWARD(rs,1);
+  FORWARD(rt,2);
 
   out->mem_op = in->mem_op;
   out->mem_val = in->mem_val;
