@@ -22,7 +22,9 @@ struct exec_pipe_idex_t {
   exec_mem_op_t mem_op;
   uint32_t mem_val;
 
-  uint32_t reg_dest;
+  uint32_t rs;
+  uint32_t rt;
+  uint32_t rd;
 };
 
 struct exec_pipe_exmem_t {
@@ -31,13 +33,13 @@ struct exec_pipe_exmem_t {
   exec_mem_op_t mem_op;
   uint32_t mem_val;
 
-  uint32_t reg_dest;
+  uint32_t rd;
 };
 
 struct exec_pipe_memwb_t {
   uint32_t alu_out;
 
-  uint32_t reg_dest;
+  uint32_t rd;
 };
 
 struct exec_state_t {
@@ -105,16 +107,18 @@ void exec_pipe_if(struct exec_state_t* state){
   out->mem_op = op;			\
   out->mem_val = val;
 
-#define REG(dest)				\
-  out->reg_dest = dest;
+#define REG(_rs,_rt,_rd)				\
+  out->rs = _rs;					\
+  out->rt = _rt;					\
+  out->rd = _rd;
 
-#define CHECK_RAW(r) (r && (state->ex_mem.reg_dest == r || state->mem_wb.reg_dest == r))
+#define CHECK_RAW(r) (r && (state->ex_mem.rd == r || state->mem_wb.rd == r))
 
 #define STALL					\
   state->stall++;				\
   ALU(ALU_NOP,0,0);				\
   MEM(MEM_NOP,0);				\
-  REG(0);					\
+  REG(0,0,0);					\
   break;
 
 void exec_pipe_id(struct exec_state_t* state){
@@ -125,33 +129,33 @@ void exec_pipe_id(struct exec_state_t* state){
   case NOP:
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0);
-    REG(0);
+    REG(0,0,0);
     break;
 
   case SYSCALL: //A bit ugly
     if(CHECK_RAW(2) || CHECK_RAW(4) || CHECK_RAW(5)){ STALL; }
     ALU(ALU__SYSCALL, state->reg[2], state->reg[5]);
     MEM(MEM_NOP, state->reg[4]);
-    REG(2);
+    REG(0,0,2); //FIXME
     break;
 
   case LA:
     ALU(ALU_ADD, state->data, in->ir.i.offset);
     MEM(MEM_NOP,0);
-    REG(in->ir.i.rd);
+    REG(0,0,in->ir.i.rd);
     break;
 
   case LB:
     if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_RB,0);
-    REG(in->ir.i.rd);
+    REG(in->ir.i.rs,0,in->ir.i.rd);
     break;
 
   case LI:
     ALU(ALU_ADD,in->ir.i.offset,0);
     MEM(MEM_NOP,0);
-    REG(in->ir.i.rd);
+    REG(0,0,in->ir.i.rd);
     break;
 
   case B:
@@ -161,7 +165,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0);
-    REG(0);
+    REG(0,0,0);
     break;
 
   case BEQZ:
@@ -174,7 +178,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0);
-    REG(0);
+    REG(0,0,0);
     break;
 
   case BGE:
@@ -187,7 +191,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0);
-    REG(0);
+    REG(0,0,0);
     break;
 
   case BNE:
@@ -200,35 +204,35 @@ void exec_pipe_id(struct exec_state_t* state){
 
     ALU(ALU_NOP,0,0);
     MEM(MEM_NOP,0);
-    REG(0);
+    REG(0,0,0);
     break;
 
   case ADD:
     if(CHECK_RAW(in->ir.r.rs) || CHECK_RAW(in->ir.r.rt)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.r.rs], state->reg[in->ir.r.rt]);
     MEM(MEM_NOP,0);
-    REG(in->ir.r.rd);
+    REG(in->ir.r.rs,in->ir.r.rt,in->ir.r.rd);
     break;
 
   case ADDI:
     if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0);
-    REG(in->ir.i.rd);
+    REG(in->ir.i.rs,0,in->ir.i.rd);
     break;
 
   case SUB:
     if(CHECK_RAW(in->ir.r.rs) || CHECK_RAW(in->ir.r.rt)){ STALL; }
     ALU(ALU_SUB, state->reg[in->ir.r.rs], state->reg[in->ir.r.rt]);
     MEM(MEM_NOP,0);
-    REG(in->ir.r.rd);
+    REG(in->ir.r.rs,in->ir.r.rt,in->ir.r.rd);
     break;
 
   case SUBI:
     if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_SUB, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0);
-    REG(in->ir.i.rd);
+    REG(in->ir.i.rs,0,in->ir.i.rd);
     break;
   }
 }
@@ -239,7 +243,7 @@ void exec_pipe_ex(struct exec_state_t* state){
 
   out->mem_op = in->mem_op;
   out->mem_val = in->mem_val;
-  out->reg_dest = in->reg_dest;
+  out->rd = in->rd;
 
   switch(in->alu_op){
   case ALU_NOP:
@@ -275,7 +279,7 @@ void exec_pipe_mem(struct exec_state_t* state){
   struct exec_pipe_exmem_t* in = &state->ex_mem;
   struct exec_pipe_memwb_t* out = &state->mem_wb;
 
-  out->reg_dest = in->reg_dest;
+  out->rd = in->rd;
   out->alu_out = in->alu_out;
 
   switch(in->mem_op){
@@ -291,12 +295,12 @@ void exec_pipe_mem(struct exec_state_t* state){
 void exec_pipe_wb(struct exec_state_t* state){
   struct exec_pipe_memwb_t* in = &state->mem_wb;
 
-  switch(in->reg_dest){
+  switch(in->rd){
   case 0:
     break;
 
   default:
-    state->reg[in->reg_dest] = in->alu_out;
+    state->reg[in->rd] = in->alu_out;
     break;
   }
 }
