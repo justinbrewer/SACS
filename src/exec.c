@@ -152,9 +152,9 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case LI:
-    ALU(ALU_NOP,0,0);
+    ALU(ALU_ADD,in->ir.i.offset,0);
     MEM(MEM_NOP,0,0);
-    REG(in->ir.i.rd, in->ir.i.offset);
+    REG(in->ir.i.rd,0);
     break;
 
   case B:
