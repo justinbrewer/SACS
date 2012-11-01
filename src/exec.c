@@ -127,6 +127,8 @@ void exec_pipe_id(struct exec_state_t* state){
   struct exec_pipe_ifid_t* in = &state->if_id;
   struct exec_pipe_idex_t* out = &state->id_ex;
 
+  if(state->stall) return;
+
   switch(in->ir.j.op){
   case NOP:
     ALU(ALU_ADD,0,0);
