@@ -150,7 +150,6 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case LB:
-    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_RB,0);
     REG(in->ir.i.rs,0,in->ir.i.rd);
@@ -212,28 +211,24 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case ADD:
-    if(CHECK_RAW(in->ir.r.rs) || CHECK_RAW(in->ir.r.rt)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.r.rs], state->reg[in->ir.r.rt]);
     MEM(MEM_NOP,0);
     REG(in->ir.r.rs,in->ir.r.rt,in->ir.r.rd);
     break;
 
   case ADDI:
-    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_ADD, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0);
     REG(in->ir.i.rs,0,in->ir.i.rd);
     break;
 
   case SUB:
-    if(CHECK_RAW(in->ir.r.rs) || CHECK_RAW(in->ir.r.rt)){ STALL; }
     ALU(ALU_SUB, state->reg[in->ir.r.rs], state->reg[in->ir.r.rt]);
     MEM(MEM_NOP,0);
     REG(in->ir.r.rs,in->ir.r.rt,in->ir.r.rd);
     break;
 
   case SUBI:
-    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
     ALU(ALU_SUB, state->reg[in->ir.i.rs], in->ir.i.offset);
     MEM(MEM_NOP,0);
     REG(in->ir.i.rs,0,in->ir.i.rd);
@@ -244,6 +239,30 @@ void exec_pipe_id(struct exec_state_t* state){
 void exec_pipe_ex(struct exec_state_t* state){
   struct exec_pipe_idex_t* in = &state->id_ex;
   struct exec_pipe_exmem_t* out = &state->ex_mem;
+
+  if(in->rs && (in->rs == out->rd)){
+    if(out->mem_op & 0x10){
+      state->stall++;
+      out->mem_op = MEM_NOP;
+      out->mem_val = 0;
+      out->rd = 0;
+      return;
+    } else {
+      in->alu_in1 = out->alu_out;
+    }
+  }
+
+  if(in->rt && (in->rt == out->rd)){
+    if(out->mem_op & 0x10){
+      state->stall++;
+      out->mem_op = MEM_NOP;
+      out->mem_val = 0;
+      out->rd = 0;
+      return;
+    } else {
+      in->alu_in2 = out->alu_out;
+    }
+  }
 
   out->mem_op = in->mem_op;
   out->mem_val = in->mem_val;
