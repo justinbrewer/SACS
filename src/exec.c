@@ -17,6 +17,8 @@ struct exec_pipe_ifid_t {
 };
 
 struct exec_pipe_idex_t {
+  uint32_t op;
+
   exec_alu_op_t alu_op;
   uint32_t alu_in1;
   uint32_t alu_in2;
@@ -30,6 +32,9 @@ struct exec_pipe_idex_t {
 };
 
 struct exec_pipe_exmem_t {
+  uint32_t op;
+  exec_alu_op_t alu_op;
+
   uint32_t alu_out;
 
   exec_mem_op_t mem_op;
@@ -39,6 +44,10 @@ struct exec_pipe_exmem_t {
 };
 
 struct exec_pipe_memwb_t {
+  uint32_t op;
+  exec_alu_op_t alu_op;
+  exec_mem_op_t mem_op;
+
   uint32_t alu_out;
 
   uint32_t rd;
@@ -133,6 +142,8 @@ void exec_pipe_id(struct exec_state_t* state){
   struct exec_pipe_idex_t* out = &state->id_ex;
 
   if(state->stall) return;
+
+  out->op == in->ir.j.op;
 
   switch(in->ir.j.op){
   case NOP:
@@ -244,6 +255,8 @@ void exec_pipe_ex(struct exec_state_t* state){
   FORWARD(rs,1);
   FORWARD(rt,2);
 
+  out->op = in->op;
+  out->alu_op = in->alu_op;
   out->mem_op = in->mem_op;
   out->mem_val = in->mem_val;
   out->rd = in->rd;
@@ -279,6 +292,9 @@ void exec_pipe_mem(struct exec_state_t* state){
   struct exec_pipe_exmem_t* in = &state->ex_mem;
   struct exec_pipe_memwb_t* out = &state->mem_wb;
 
+  out->op = in->op;
+  out->alu_op = in->alu_op;
+  out->mem_op = in->mem_op;
   out->rd = in->rd;
   out->alu_out = in->alu_out;
 
