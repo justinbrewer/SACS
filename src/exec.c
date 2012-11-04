@@ -162,53 +162,33 @@ void exec_pipe_id(struct exec_state_t* state){
     break;
 
   case B:
-    state->stall = 1;
     state->pc += in->ir.j.offset<<2;
     in->ir.u = 0;
-
-    ALU(ALU_ADD,0,0);
-    MEM(MEM_NOP,0);
-    REG(0,0,0);
-    break;
+    STALL;
 
   case BEQZ:
     if(CHECK_RAW(in->ir.i.rs)){ STALL; }
-    state->stall = 1;
     if(state->reg[in->ir.i.rs] == 0){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
-
-    ALU(ALU_ADD,0,0);
-    MEM(MEM_NOP,0);
-    REG(0,0,0);
-    break;
+    STALL;
 
   case BGE:
     if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
-    state->stall = 1;
     if((int32_t)state->reg[in->ir.i.rd] >= (int32_t)state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
-
-    ALU(ALU_ADD,0,0);
-    MEM(MEM_NOP,0);
-    REG(0,0,0);
-    break;
+    STALL;
 
   case BNE:
     if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
-    state->stall = 1;
     if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
-
-    ALU(ALU_ADD,0,0);
-    MEM(MEM_NOP,0);
-    REG(0,0,0);
-    break;
+    STALL;
 
   case ADD:
     ALU(ALU_ADD, state->reg[in->ir.r.rs], state->reg[in->ir.r.rt]);
