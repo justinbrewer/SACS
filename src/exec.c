@@ -50,11 +50,15 @@ struct exec_state_t {
   uint32_t text;
   uint32_t data;
   uint32_t reg[32];
+
   uint32_t stall;
+  uint32_t lr;
+
   struct exec_pipe_ifid_t if_id;
   struct exec_pipe_idex_t id_ex;
   struct exec_pipe_exmem_t ex_mem;
   struct exec_pipe_memwb_t mem_wb;
+
   struct exec_stats_t* stats;
 };
 
@@ -217,14 +221,18 @@ void exec_pipe_id(struct exec_state_t* state){
 }
 
 #define FORWARD(r,p)				\
-  if(in->r && (in->r == out->rd)){		\
-    if(out->mem_op & 0x10){			\
-      state->stall++;				\
-      MEM(MEM_NOP,0);				\
-      out->rd = 0;				\
-      return;					\
-    } else {					\
-      in->alu_in##p = out->alu_out;		\
+  if(in->r){					\
+    if(in->r == out->rd){			\
+      if(out->mem_op & 0x10){			\
+	state->stall++;				\
+	MEM(MEM_NOP,0);				\
+	out->rd = 0;				\
+	return;					\
+      } else {					\
+	in->alu_in##p = out->alu_out;		\
+      }						\
+    }else if(in->rd == state->lr){		\
+      in->alu_in##p = state->reg[in->r];	\
     }						\
   }
 
@@ -285,6 +293,8 @@ void exec_pipe_mem(struct exec_state_t* state){
 
 void exec_pipe_wb(struct exec_state_t* state){
   struct exec_pipe_memwb_t* in = &state->mem_wb;
+
+  state->lr = in->rd;
 
   if(in->rd){
     state->reg[in->rd] = in->alu_out;
