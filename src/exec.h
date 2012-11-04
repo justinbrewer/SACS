@@ -5,6 +5,7 @@
 struct exec_stats_t {
   uint32_t c;
   uint32_t ic;
+  uint32_t nopc;
 };
 
 struct exec_stats_t* exec_run(uint32_t start, uint32_t text, uint32_t data);

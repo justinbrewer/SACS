@@ -24,6 +24,6 @@ int main(int argc, char** argv){
 
   mem_cleanup();
 
-  printf("C: %d\nIC: %d\n",stats->c,stats->ic);
+  printf("C: %d\nIC: %d\nNOPs: %d\n",stats->c,stats->ic,stats->nopc);
   return 0;
 }

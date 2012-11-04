@@ -101,6 +101,7 @@ void exec_pipe_if(struct exec_state_t* state){
     state->stats->ic++;
   } else {
     state->stall--;
+    state->stats->nopc++;
   }
 }
 
