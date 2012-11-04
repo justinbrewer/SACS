@@ -137,7 +137,16 @@ void exec_pipe_if(struct exec_state_t* state){
   REG(0,0,0);					\
   break;
 
+#define ID_FORWARD(r,p)				\
+  if(r == state->ex_mem.rd){ STALL; }		\
+  else if(r == state->mem_wb.rd){		\
+    if(state->mem_wb.mem_op & 0x10){ STALL; }	\
+    else{ p = state->mem_wb.alu_out; }		\
+  }						\
+  else{ p = state->reg[r]; }
+
 void exec_pipe_id(struct exec_state_t* state){
+  uint32_t a,b;
   struct exec_pipe_ifid_t* in = &state->if_id;
   struct exec_pipe_idex_t* out = &state->id_ex;
 
@@ -183,23 +192,25 @@ void exec_pipe_id(struct exec_state_t* state){
     STALL;
 
   case BEQZ:
-    if(CHECK_RAW(in->ir.i.rs)){ STALL; }
-    if(state->reg[in->ir.i.rs] == 0){
+    ID_FORWARD(in->ir.i.rs,a);
+    if(a == 0){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
     STALL;
 
   case BGE:
-    if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
-    if((int32_t)state->reg[in->ir.i.rd] >= (int32_t)state->reg[in->ir.i.rs]){
+    ID_FORWARD(in->ir.i.rd,a);
+    ID_FORWARD(in->ir.i.rs,b);
+    if((int32_t)a >= (int32_t)b){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
     STALL;
 
   case BNE:
-    if(CHECK_RAW(in->ir.i.rd) || CHECK_RAW(in->ir.i.rs)){ STALL; }
+    ID_FORWARD(in->ir.i.rd,a);
+    ID_FORWARD(in->ir.i.rs,b);
     if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
       state->pc += in->ir.i.offset<<2;
     }
@@ -232,7 +243,7 @@ void exec_pipe_id(struct exec_state_t* state){
   }
 }
 
-#define FORWARD(r,p)				\
+#define EX_FORWARD(r,p)				\
   if(in->r){					\
     if(in->r == out->rd){			\
       if(out->mem_op & 0x10){			\
@@ -252,8 +263,8 @@ void exec_pipe_ex(struct exec_state_t* state){
   struct exec_pipe_idex_t* in = &state->id_ex;
   struct exec_pipe_exmem_t* out = &state->ex_mem;
 
-  FORWARD(rs,1);
-  FORWARD(rt,2);
+  EX_FORWARD(rs,1);
+  EX_FORWARD(rt,2);
 
   out->op = in->op;
   out->alu_op = in->alu_op;
