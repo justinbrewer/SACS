@@ -214,7 +214,7 @@ void exec_pipe_id(struct exec_state_t* state){
   case BNE:
     ID_FORWARD(in->ir.i.rd,a);
     ID_FORWARD(in->ir.i.rs,b);
-    if(state->reg[in->ir.i.rd] != state->reg[in->ir.i.rs]){
+    if(a != b){
       state->pc += in->ir.i.offset<<2;
     }
     in->ir.u = 0;
