@@ -146,7 +146,7 @@ void exec_pipe_if(struct exec_state_t* state){
   else{ p = state->reg[r]; }
 
 void exec_pipe_id(struct exec_state_t* state){
-  uint32_t a,b;
+  uint32_t a,b,c;
   struct exec_pipe_ifid_t* in = &state->if_id;
   struct exec_pipe_idex_t* out = &state->id_ex;
 
@@ -161,11 +161,14 @@ void exec_pipe_id(struct exec_state_t* state){
     REG(0,0,0);
     break;
 
-  case SYSCALL: //A bit ugly
-    if(CHECK_RAW(2) || CHECK_RAW(4) || CHECK_RAW(5)){ STALL; }
-    ALU(ALU__SYSCALL, state->reg[2], state->reg[5]);
-    MEM(MEM_NOP, state->reg[4]);
-    REG(0,0,2); //FIXME
+  case SYSCALL:
+    ID_FORWARD(2,a);
+    ID_FORWARD(4,b);
+    ID_FORWARD(5,c);
+
+    ALU(ALU__SYSCALL,a,b);
+    MEM(MEM_NOP,c);
+    REG(2,4,2);
     break;
 
   case LA:
@@ -282,15 +285,16 @@ void exec_pipe_ex(struct exec_state_t* state){
     break;
 
   case ALU__SYSCALL:
+    out->rd = 0;
     switch(in->alu_in1){
     case 1:
-      printf("%d\n",in->mem_val);
+      printf("%d\n",in->alu_in2);
       break;
     case 4:
-      fputs((char*)mem_translate_addr(in->mem_val), stdout);
+      fputs((char*)mem_translate_addr(in->alu_in2), stdout);
       break;
     case 8:
-      fgets((char*)mem_translate_addr(in->mem_val), in->alu_in2, stdin);
+      fgets((char*)mem_translate_addr(in->alu_in2), in->mem_val, stdin);
       break;
     case 10:
       state->running = 0;
