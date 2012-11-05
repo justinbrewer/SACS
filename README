@@ -1,0 +1,48 @@
+Justin Brewer jzb0012
+============================
+How to use
+
+To compile, run:
+
+   make
+
+To run:
+
+   ./pipeSim <source-file>
+
+============================
+How it works
+
+The assembler and memory modules are the same as lab 2.
+
+The execution module simulates a pipeline using the pull model. The entire state
+of the machine is represented as a single exec_state_t struct, which is
+subdivided into structs representing individual pipeline buffers. The entire
+state is passed to each stage of the pipeline so that all information about the
+current execution state is available. Because there is only one copy of the
+state, the stages must be executed in reverse order, thus it is a pull model.
+
+============================
+Difficulties
+
+Implementing forwarding was by far the most difficult part. Due to the nature of
+the pull model, the simulator is always in a mixed state; within the execution
+of a stage, all later stages have already been executed and thus their buffers
+represent the next stage of execution, rather than the current one. This makes
+forwarding far more compicated since you have to try to deduce the previous
+state of a buffer based on the buffer after it. (eg. if we are in the ID stage
+and need to inspect the EX/MEM buffer, we have to look at the MEM/WB buffer
+since these stages of the pipeline have already executed for this cycle.) The
+push model does not suffer from this setback, because there are two states in
+each stage: a pristine copy of the current cycle's state and a working copy used
+to construct the next cycle's state.
+
+============================
+Test Results
+
+Cycles: 62
+Instrs: 52 (NOTE: syscall-10 stops the simulator in the EX stage, so there are 
+            two extra fetches past the final syscall)
+NOPs:   10 (Since my machine is capable of stalling itself, there was no need
+ 	    to add NOPs to the source file, and this number is simply how many
+	    times the pipeline stalled.)
