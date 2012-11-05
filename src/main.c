@@ -23,5 +23,7 @@ int main(int argc, char** argv){
   struct exec_stats_t* stats = exec_run(loc,loc,loc+bin->data_segment);
 
   mem_cleanup();
+
+  printf("C: %d\nIC: %d\n",stats->c,stats->ic);
   return 0;
 }
