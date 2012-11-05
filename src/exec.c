@@ -137,12 +137,12 @@ void exec_pipe_if(struct exec_state_t* state){
   REG(0,0,0);					\
   break;
 
-#define ID_FORWARD(r,p)				\
-  if(r == state->ex_mem.rd){ STALL; }		\
-  else if(r == state->mem_wb.rd){		\
-    if(state->mem_wb.mem_op & 0x10){ STALL; }	\
-    else{ p = state->mem_wb.alu_out; }		\
-  }						\
+#define ID_FORWARD(r,p)					\
+  if(r == state->ex_mem.rd){ STALL; }			\
+  else if(r == state->mem_wb.rd){			\
+    if(state->mem_wb.mem_op != MEM_NOP){ STALL; }	\
+    else{ p = state->mem_wb.alu_out; }			\
+  }							\
   else{ p = state->reg[r]; }
 
 void exec_pipe_id(struct exec_state_t* state){
@@ -249,7 +249,7 @@ void exec_pipe_id(struct exec_state_t* state){
 #define EX_FORWARD(r,p)				\
   if(in->r){					\
     if(in->r == out->rd){			\
-      if(out->mem_op & 0x10){			\
+      if(out->mem_op != MEM_NOP){		\
 	state->stall++;				\
 	MEM(MEM_NOP,0);				\
 	out->rd = 0;				\
