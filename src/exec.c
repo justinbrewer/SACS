@@ -17,7 +17,7 @@ struct exec_pipe_ifid_t {
 };
 
 struct exec_pipe_idex_t {
-  uint32_t op;
+  gpr_op_t op;
 
   exec_alu_op_t alu_op;
   uint32_t alu_in1;
@@ -32,7 +32,7 @@ struct exec_pipe_idex_t {
 };
 
 struct exec_pipe_exmem_t {
-  uint32_t op;
+  gpr_op_t op;
   exec_alu_op_t alu_op;
 
   uint32_t alu_out;
@@ -44,7 +44,7 @@ struct exec_pipe_exmem_t {
 };
 
 struct exec_pipe_memwb_t {
-  uint32_t op;
+  gpr_op_t op;
   exec_alu_op_t alu_op;
   exec_mem_op_t mem_op;
 
@@ -152,7 +152,7 @@ void exec_pipe_id(struct exec_state_t* state){
 
   if(state->stall) return;
 
-  out->op == in->ir.j.op;
+  out->op = in->ir.j.op;
 
   switch(in->ir.j.op){
   case NOP:
