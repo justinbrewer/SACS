@@ -26,7 +26,12 @@
   instr->argv[i].type = VALUE;			\
   instr->argv[i].value = atoi(argv[i]);
 
+#define FLOATREG_ARG(i)					\
+  intsr->argv[i].type = VALUE;				\
+  instr->argv[i].value = _translate_fpr_name(argv[i]);
+
 uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]);
+uint32_t _translate_fpr_name(char name[MAX_TOKEN_LEN]);
 
 struct asm_instr* asm_decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
   struct asm_instr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
@@ -260,8 +265,17 @@ uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]){
   }
   if(i < 32){
     return i;
-  }
+  } 
 
   printf("Error: Unknown register \"%s\"\n",name);
   exit(EXIT_FAILURE);
+}
+
+uint32_t _translate_fpr_name(char name[MAX_TOKEN_LEN]){
+  if(name[0] != '$' || name[1] != 'f' || !isdigit(name[2])){
+    printf("Error: Expected floating-point register name, got \"%s\"\n",name);
+    exit(EXIT_FAILURE);
+  }
+
+  return atoi(name+2);
 }
