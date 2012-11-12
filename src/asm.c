@@ -1,16 +1,63 @@
 #include "asm.h"
-#include "asm_impl.h"
+#include "instr.h"
 #include "list.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
 
 #define MAX_LINE_LENGTH 256
+#define MAX_TOKEN_LEN  16
+#define MAX_ARGC 4
+#define MAX_ENTRY_SIZE 1024
 
-uint32_t _parse_asciiz(char* in, char* out);
+typedef enum { VALUE, REFERENCE } asm_arg_type;
+typedef enum { INSTR, DATA } asm_entry_type;
+typedef enum { TEXT_SEG, DATA_SEG } asm_segment;
+
+struct asm_arg {
+  asm_arg_type type;
+  union {
+    uint32_t value;
+    char reference[MAX_TOKEN_LEN];
+  };
+};
+
+struct asm_instr {
+  uint8_t opcode;
+  uint8_t argc;
+  struct asm_arg argv[MAX_ARGC];
+};
+
+struct asm_entry {
+  asm_entry_type type;
+  uint32_t loc;
+  uint32_t size;
+
+  union {
+    struct asm_instr instr;
+    uint8_t data[MAX_ENTRY_SIZE];
+  };
+};
+
+struct asm_label {
+  asm_segment segment;
+  uint32_t loc;
+  char name[MAX_TOKEN_LEN];
+};
+
+struct asm_instr*  _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]);
+uint32_t           _collapse_instr(struct asm_instr* instr);
+
+struct asm_binary* _create_binary();
+void               _delete_binary(struct asm_binary* bin);
+
+uint32_t           _parse_asciiz(char* in, char* out);
+uint32_t           _translate_reg_name(char name[MAX_TOKEN_LEN]);
+uint32_t           _translate_fpr_name(char name[MAX_TOKEN_LEN]);
 
 /** \brief Generates a binary from the given source file
 
@@ -123,7 +170,7 @@ struct asm_binary* asm_parse_file(const char* file){
 	  strcpy(argv[argc++],token);
 	}
 
-	instr = asm_decode_instr(operator,argc,argv);
+	instr = _decode_instr(operator,argc,argv);
 	memcpy(&entry.instr,instr,sizeof(struct asm_instr));
 	free(instr);
 
@@ -193,7 +240,7 @@ struct asm_binary* asm_parse_file(const char* file){
 
     switch(entryptr->type){
     case INSTR:
-      *(uint32_t*)(ptr) = asm_collapse_instr(&entryptr->instr);
+      *(uint32_t*)(ptr) = _collapse_instr(&entryptr->instr);
       ptr += 4;
       break;
 
@@ -218,6 +265,238 @@ struct asm_binary* asm_parse_file(const char* file){
  */
 void asm_free_binary(struct asm_binary* bin){
   _delete_binary(bin);
+}
+
+#define CHECK_ARGC							\
+  if(instr->argc != argc){						\
+    printf("Error: %s takes %d arguments, got %d\n",			\
+	   operator,instr->argc,argc);					\
+    exit(EXIT_FAILURE);							\
+  }
+
+#define REGISTER_ARG(i)						\
+  instr->argv[i].type = VALUE;					\
+  instr->argv[i].value = _translate_reg_name(argv[i]);
+
+#define LABEL_ARG(i)				\
+  instr->argv[i].type = REFERENCE;		\
+  strcpy(instr->argv[i].reference,argv[i]);
+
+#define IMM_ARG(i)				\
+  instr->argv[i].type = VALUE;			\
+  instr->argv[i].value = atoi(argv[i]);
+
+#define FLOATREG_ARG(i)					\
+  intsr->argv[i].type = VALUE;				\
+  instr->argv[i].value = _translate_fpr_name(argv[i]);
+
+struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
+  struct asm_instr* instr = (struct asm_instr*)malloc(sizeof(struct asm_instr));
+
+  if(strcmp(operator,"syscall") == 0){
+    instr->opcode = SYSCALL;
+    instr->argc = 0;
+    CHECK_ARGC;
+  }
+
+  else if(strcmp(operator,"nop") == 0){
+    instr->opcode = NOP;
+    instr->argc = 0;
+    CHECK_ARGC;
+  }
+
+  else if(strcmp(operator,"la") == 0){
+    instr->opcode = LA;
+    instr->argc = 2;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    LABEL_ARG(1);
+  }
+
+  //LB requires special processing, since one arg is passed as imm(reg)
+  else if(strcmp(operator,"lb") == 0){
+    instr->opcode = LB;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    //Split "imm(reg)" into "imm" "reg"
+    int i, len = strlen(argv[1]);
+    char* reg;
+    for(i=0;i<len;i++){
+      if(argv[1][i] == '('){
+	argv[1][i] = 0;
+	reg = (&argv[1][i])+1;
+	continue;
+      }
+      if(argv[1][i] == ')'){
+	argv[1][i] = 0;
+	break;
+      }
+    }
+    strcpy(argv[2],reg);
+
+    REGISTER_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
+  }
+
+  else if(strcmp(operator,"li") == 0){
+    instr->opcode = LI;
+    instr->argc = 2;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    IMM_ARG(1);
+  }
+
+  else if(strcmp(operator,"b") == 0){
+    instr->opcode = B;
+    instr->argc = 1;
+    CHECK_ARGC;
+
+    LABEL_ARG(0);
+  }
+
+  else if(strcmp(operator,"beqz") == 0){
+    instr->opcode = BEQZ;
+    instr->argc = 2;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    LABEL_ARG(1);
+  }
+
+  else if(strcmp(operator,"bge") == 0){
+    instr->opcode = BGE;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    LABEL_ARG(2);
+  }
+
+  else if(strcmp(operator,"bne") == 0){
+    instr->opcode = BNE;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    LABEL_ARG(2);
+  }
+
+  else if(strcmp(operator,"add") == 0){
+    instr->opcode = ADD;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    REGISTER_ARG(2);
+  }
+
+  else if(strcmp(operator,"addi") == 0){
+    instr->opcode = ADDI;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    IMM_ARG(2);
+  }
+
+  else if(strcmp(operator,"sub") == 0){
+    instr->opcode = SUB;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    REGISTER_ARG(2);
+  }
+
+  else if(strcmp(operator,"subi") == 0){
+    instr->opcode = SUBI;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    REGISTER_ARG(0);
+    REGISTER_ARG(1);
+    IMM_ARG(2);
+  }
+
+  else {
+    printf("Error: Unknown argument \"%s\"\n",operator);
+    exit(EXIT_FAILURE);
+  }
+
+  return instr;
+}
+
+uint32_t _collapse_instr(struct asm_instr* instr){
+  union gpr_instr_t res;
+  res.u = 0;
+
+  switch(instr->opcode){
+  case SYSCALL:
+  case NOP:
+    res.j.op = instr->opcode;
+    break;
+
+  case ADD:
+  case SUB:
+    res.r.op = instr->opcode;
+    res.r.rs = instr->argv[1].value;
+    res.r.rt = instr->argv[2].value;
+    res.r.rd = instr->argv[0].value;
+    res.r.shift = 0;
+    res.r.func = 0;
+    break;
+
+  case ADDI:
+  case BGE:
+  case BNE:
+  case SUBI:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[1].value;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[2].value;
+    break;
+
+  case B:
+    res.j.op = instr->opcode;
+    res.j.offset = instr->argv[0].value;
+    break;
+
+  case BEQZ:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[0].value;
+    res.i.offset = instr->argv[1].value;
+    break;
+
+  case LA:
+  case LI:
+    res.i.op = instr->opcode;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[1].value;
+    break;
+
+  case LB:
+    res.i.op = instr->opcode;
+    res.i.rs = instr->argv[2].value;
+    res.i.rd = instr->argv[0].value;
+    res.i.offset = instr->argv[1].value;
+    break;
+  }
+
+  return res.u;
 }
 
 struct asm_binary* _create_binary(){
@@ -265,4 +544,42 @@ uint32_t _parse_asciiz(char* in, char* out){
   size++;
 
   return size;
+}
+
+uint32_t _translate_reg_name(char name[MAX_TOKEN_LEN]){
+  int i;
+  static char register_names[32][5] = {"zero","at","v0","v1","a0","a1","a2","a3",
+                                       "t0","t1","t2","t3","t4","t5","t6","t7",
+                                       "s0","s1","s2","s3","s4","s5","s6","s7",
+                                       "t8","t9","k0","k1","gp","sp","fp","ra"};
+
+  if(name[0] != '$'){
+    printf("Error: Expected register name, got \"%s\"\n",name);
+    exit(EXIT_FAILURE);
+  }
+
+  if(isdigit(name[1])){
+    return atoi(name+1);
+  }
+
+  for(i=0;i<32;i++){
+    if(strcmp(name+1,register_names[i]) == 0){
+      break;
+    }
+  }
+  if(i < 32){
+    return i;
+  } 
+
+  printf("Error: Unknown register \"%s\"\n",name);
+  exit(EXIT_FAILURE);
+}
+
+uint32_t _translate_fpr_name(char name[MAX_TOKEN_LEN]){
+  if(name[0] != '$' || name[1] != 'f' || !isdigit(name[2])){
+    printf("Error: Expected floating-point register name, got \"%s\"\n",name);
+    exit(EXIT_FAILURE);
+  }
+
+  return atoi(name+2);
 }

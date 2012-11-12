@@ -7,7 +7,7 @@ OBJDIR = obj
 TOBJDIR = tobj
 BUILDDIR = build
 
-SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(OBJDIR)/exec.o
+SACSOBJ = $(OBJDIR)/main.o $(OBJDIR)/mem.o $(OBJDIR)/asm.o $(OBJDIR)/list.o $(OBJDIR)/exec.o
 
 all: init sacs
 
@@ -29,7 +29,7 @@ memtest: tinit $(OBJDIR)/mem.o
 
 asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
 	$(CC) $(CFLAGS) -o $(TOBJDIR)/asmtest.o tests/asmtest.c
-	$(LL) $(LFLAGS) -o $(BUILDDIR)/asmtest $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o $(TOBJDIR)/asmtest.o
+	$(LL) $(LFLAGS) -o $(BUILDDIR)/asmtest $(OBJDIR)/asm.o $(OBJDIR)/list.o $(TOBJDIR)/asmtest.o
 
 doc: src/* Doxyfile
 	doxygen Doxyfile
@@ -43,11 +43,8 @@ $(OBJDIR)/main.o: src/asm.h src/mem.h src/exec.h src/main.c
 $(OBJDIR)/mem.o: src/mem.h src/mem.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/mem.o src/mem.c
 
-$(OBJDIR)/asm.o: src/asm.h src/asm_impl.h src/asm.c
+$(OBJDIR)/asm.o: src/asm.h src/asm.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/asm.o src/asm.c
-
-$(OBJDIR)/asm_impl.o: src/asm.h src/asm_impl.h src/asm_impl.c
-	$(CC) $(CFLAGS) -o $(OBJDIR)/asm_impl.o src/asm_impl.c
 
 $(OBJDIR)/exec.o: src/mem.h src/exec.h src/instr.h src/exec.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/exec.o src/exec.c
