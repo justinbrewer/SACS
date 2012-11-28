@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NUM_UNITS 4
+#define NUM_UNITS 5
 
 //Raw conversion to float
 #define FLOAT(x) (*(float*)(&x))
 
 typedef enum { FALSE=0, TRUE=1 } bool;
-typedef enum { U_NONE=-1, U_INT=0, U_FPADD=1, U_FPMUL=2, U_FPDIV=3 } exec_funit_t;
+typedef enum { U_NONE=-1, U_INT=0, U_FPADD=1, U_FPMUL=2, U_FPDIV=3, U_MEM=4 } exec_funit_t;
 
 struct exec_funit_state_t {
   uint32_t cycles;
@@ -59,6 +59,7 @@ struct exec_stats_t* exec_run(uint32_t start, uint32_t text, uint32_t data){
   current.funit_state[U_FPADD].cycles = 10;
   current.funit_state[U_FPMUL].cycles = 20;
   current.funit_state[U_FPDIV].cycles = 40;
+  current.funit_state[U_MEM].cycles = 1;
 
   for(i=0;i<64;i++) current.reg_status[i] = U_NONE;
 
@@ -87,6 +88,9 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   next->pc = current->pc + 4;
 
   switch(instr.j.op){
+  case NOP:
+    return;
+
   case ADD:
   case SUB:
     funit = U_INT;
@@ -95,7 +99,14 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
 
   case ADDI:
   case SUBI:
+  case LA:
+  case LI:
     funit = U_INT;
+    rd = instr.i.rd;
+    break;
+
+  case LB:
+    funit = U_MEM;
     rd = instr.i.rd;
     break;
   }
@@ -113,10 +124,8 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   case ADD:
   case SUB:
     next->funit_state[funit].rd = instr.r.rd;
-
     next->funit_state[funit].rs = instr.r.rs;
     next->funit_state[funit].rs_r = FALSE;
-    
     next->funit_state[funit].rt = instr.r.rt;
     next->funit_state[funit].rt_r = FALSE;
     break;
@@ -124,10 +133,25 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   case ADDI:
   case SUBI:
     next->funit_state[funit].rd = instr.i.rd;
-
     next->funit_state[funit].rs = instr.i.rs;
     next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.i.offset;
+    next->funit_state[funit].rt_r = TRUE;
+    break;
 
+  case LA:
+  case LI:
+    next->funit_state[funit].rd = instr.i.rd;
+    next->funit_state[funit].rs = 0;
+    next->funit_state[funit].rs_r = TRUE;
+    next->funit_state[funit].rt = instr.i.offset;
+    next->funit_state[funit].rt_r = TRUE;
+    break;
+
+  case LB:
+    next->funit_state[funit].rd = instr.i.rd;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
     next->funit_state[funit].rt = instr.i.offset;
     next->funit_state[funit].rt_r = TRUE;
     break;
@@ -172,6 +196,18 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
     case SUB:
     case SUBI:
       next->funit_state[i].rd = current->funit_state[i].rs - current->funit_state[i].rt;
+      break;
+
+    case LA:
+      next->funit_state[i].rd = current->data + current->funit_state[i].rt;
+      break;
+
+    case LB:
+      next->funit_state[i].rd = mem_read8(current->funit_state[i].rs + current->funit_state[i].rt);
+      break;
+
+    case LI:
+      next->funit_state[i].rd = current->funit_state[i].rt;
       break;
     }
   }
