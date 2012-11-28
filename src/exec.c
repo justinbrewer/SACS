@@ -221,6 +221,7 @@ void exec_write(struct exec_state_t* current, struct exec_state_t* next){
       for(rd=0;rd<64;rd++) if(current->reg_status[rd] == i) break;
       assert(rd < 64);
       
+      next->funit_state[i].op = NOP;
       next->reg[rd] = current->funit_state[i].rd;
       next->reg_status[rd] = U_NONE;
       return; //Presumably we can only write once per cycle
