@@ -27,7 +27,7 @@ memtest: tinit $(OBJDIR)/mem.o
 	$(CC) $(CFLAGS) -o $(TOBJDIR)/memtest.o tests/memtest.c
 	$(LL) $(LFLAGS) -o $(BUILDDIR)/memtest $(OBJDIR)/mem.o $(TOBJDIR)/memtest.o
 
-asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/asm_impl.o $(OBJDIR)/list.o
+asmtest: tinit $(OBJDIR)/asm.o $(OBJDIR)/list.o
 	$(CC) $(CFLAGS) -o $(TOBJDIR)/asmtest.o tests/asmtest.c
 	$(LL) $(LFLAGS) -o $(BUILDDIR)/asmtest $(OBJDIR)/asm.o $(OBJDIR)/list.o $(TOBJDIR)/asmtest.o
 
