@@ -137,6 +137,14 @@ struct asm_binary* asm_parse_file(const char* file){
 	  list_add(entry_list,&entry);
 	  loc += entry.size;
 	}
+	else if(strcmp("float",token) == 0){
+	  entry.type = DATA;
+	  entry.loc = loc;
+	  entry.size = 4;
+	  *(float*)(&entry.data) = strtod(strtok(NULL," \t\n\v\f\r"),NULL);
+	  list_add(entry_list,&entry);
+	  loc += entry.size;
+	}
 	else if(strcmp("asciiz",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
