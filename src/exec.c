@@ -224,7 +224,6 @@ void exec_write(struct exec_state_t* current, struct exec_state_t* next){
       next->funit_state[i].op = NOP;
       next->reg[rd] = current->funit_state[i].rd;
       next->reg_status[rd] = U_NONE;
-      return; //Presumably we can only write once per cycle
     }
   }
 }
