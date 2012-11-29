@@ -137,6 +137,14 @@ struct asm_binary* asm_parse_file(const char* file){
 	  list_add(entry_list,&entry);
 	  loc += entry.size;
 	}
+	else if(strcmp("float",token) == 0){
+	  entry.type = DATA;
+	  entry.loc = loc;
+	  entry.size = 4;
+	  *(float*)(&entry.data) = strtod(strtok(NULL," \t\n\v\f\r"),NULL);
+	  list_add(entry_list,&entry);
+	  loc += entry.size;
+	}
 	else if(strcmp("asciiz",token) == 0){
 	  entry.type = DATA;
 	  entry.loc = loc;
@@ -274,6 +282,22 @@ void asm_free_binary(struct asm_binary* bin){
     exit(EXIT_FAILURE);							\
   }
 
+#define SPLIT_IMMREG(i,j)			\
+  int _k, _len = strlen(argv[i]);		\
+  char* _reg;					\
+  for(_k=0;_k<_len;_k++){			\
+    if(argv[i][_k] == '('){			\
+      argv[i][_k] = 0;				\
+      _reg = (&argv[i][_k])+1;			\
+      continue;					\
+    }						\
+    if(argv[i][_k] == ')'){			\
+      argv[i][_k] = 0;				\
+      break;					\
+    }						\
+  }						\
+  strcpy(argv[j],_reg);				\
+
 #define REGISTER_ARG(i)						\
   instr->argv[i].type = VALUE;					\
   instr->argv[i].value = _translate_reg_name(argv[i]);
@@ -287,7 +311,7 @@ void asm_free_binary(struct asm_binary* bin){
   instr->argv[i].value = atoi(argv[i]);
 
 #define FLOATREG_ARG(i)					\
-  intsr->argv[i].type = VALUE;				\
+  instr->argv[i].type = VALUE;				\
   instr->argv[i].value = _translate_fpr_name(argv[i]);
 
 struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
@@ -314,7 +338,6 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
     LABEL_ARG(1);
   }
 
-  //LB requires special processing, since one arg is passed as imm(reg)
   else if(strcmp(operator,"lb") == 0){
     instr->opcode = LB;
     instr->argc = 3;
@@ -325,21 +348,7 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
       exit(EXIT_FAILURE);
     }
 
-    //Split "imm(reg)" into "imm" "reg"
-    int i, len = strlen(argv[1]);
-    char* reg;
-    for(i=0;i<len;i++){
-      if(argv[1][i] == '('){
-	argv[1][i] = 0;
-	reg = (&argv[1][i])+1;
-	continue;
-      }
-      if(argv[1][i] == ')'){
-	argv[1][i] = 0;
-	break;
-      }
-    }
-    strcpy(argv[2],reg);
+    SPLIT_IMMREG(1,2);
 
     REGISTER_ARG(0);
     IMM_ARG(1);
@@ -353,6 +362,40 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
 
     REGISTER_ARG(0);
     IMM_ARG(1);
+  }
+
+  else if(strcmp(operator,"l.d") == 0){
+    instr->opcode = L_D;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    SPLIT_IMMREG(1,2);
+
+    FLOATREG_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
+  }
+
+  else if(strcmp(operator,"s.d") == 0){
+    instr->opcode = S_D;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    SPLIT_IMMREG(1,2);
+
+    FLOATREG_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
   }
 
   else if(strcmp(operator,"b") == 0){
@@ -432,8 +475,38 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
     IMM_ARG(2);
   }
 
+  else if(strcmp(operator,"fadd") == 0){
+    instr->opcode = FADD;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
+  else if(strcmp(operator,"fsub") == 0){
+    instr->opcode = FSUB;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
+  else if(strcmp(operator,"fmul") == 0){
+    instr->opcode = FMUL;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
   else {
-    printf("Error: Unknown argument \"%s\"\n",operator);
+    printf("Error: Unknown operator \"%s\"\n",operator);
     exit(EXIT_FAILURE);
   }
 
@@ -452,6 +525,9 @@ uint32_t _collapse_instr(struct asm_instr* instr){
 
   case ADD:
   case SUB:
+  case FADD:
+  case FSUB:
+  case FMUL:
     res.r.op = instr->opcode;
     res.r.rs = instr->argv[1].value;
     res.r.rt = instr->argv[2].value;
@@ -489,6 +565,8 @@ uint32_t _collapse_instr(struct asm_instr* instr){
     break;
 
   case LB:
+  case L_D:
+  case S_D:
     res.i.op = instr->opcode;
     res.i.rs = instr->argv[2].value;
     res.i.rd = instr->argv[0].value;
