@@ -1,8 +1,10 @@
 #include "exec.h"
 #include "instr.h"
+#include "mem.h"
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -91,6 +93,15 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   case NOP:
     return;
 
+  case SYSCALL:
+  case B:
+  case BEQZ:
+  case BGE:
+  case BNE:
+    funit = U_INT;
+    rd = 0;
+    break;
+
   case ADD:
   case SUB:
     funit = U_INT;
@@ -106,8 +117,25 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case LB:
+  case L_D:
     funit = U_MEM;
     rd = instr.i.rd;
+    break;
+
+  case S_D:
+    funit = U_MEM;
+    rd = 0;
+    break;
+
+  case FADD:
+  case FSUB:
+    funit = U_FPADD;
+    rd = instr.r.rd + 32;
+    break;
+
+  case FMUL:
+    funit = U_FPMUL;
+    rd = instr.r.rd + 32;
     break;
   }
 
@@ -121,6 +149,51 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   }
 
   switch(instr.j.op){
+  case SYSCALL:
+    if(current->reg_status[2] != U_NONE || current->reg_status[4] != U_NONE
+       || current->reg_status[5] != U_NONE){
+      next->pc = current->pc;
+      return;
+    }
+    next->funit_state[funit].rd = current->reg[2];
+    next->funit_state[funit].rs = current->reg[4];
+    next->funit_state[funit].rs_r = TRUE;
+    next->funit_state[funit].rt = current->reg[5];
+    next->funit_state[funit].rt_r = TRUE;
+    break;
+
+  case B:
+    next->funit_state[funit].rd = instr.j.offset;
+    next->funit_state[funit].rs = 0;
+    next->funit_state[funit].rs_r = TRUE;
+    next->funit_state[funit].rt = 0;
+    next->funit_state[funit].rt_r = TRUE;
+    break;
+
+  case BEQZ:
+    next->funit_state[funit].rd = instr.i.offset;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = 0;
+    next->funit_state[funit].rt_r = TRUE;
+    break;
+
+  case BGE:
+    next->funit_state[funit].rd = instr.i.offset;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.i.rd;
+    next->funit_state[funit].rt_r = FALSE;
+    break;
+
+  case BNE:
+    next->funit_state[funit].rd = instr.i.offset;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.i.rd;
+    next->funit_state[funit].rt_r = FALSE;
+    break;
+
   case ADD:
   case SUB:
     next->funit_state[funit].rd = instr.r.rd;
@@ -155,6 +228,32 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     next->funit_state[funit].rt = instr.i.offset;
     next->funit_state[funit].rt_r = TRUE;
     break;
+
+  case FADD:
+  case FSUB:
+  case FMUL:
+    next->funit_state[funit].rd = instr.r.rd + 32;
+    next->funit_state[funit].rs = instr.r.rs + 32;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.r.rt + 32;
+    next->funit_state[funit].rt_r = FALSE;
+    break;
+
+  case L_D:
+    next->funit_state[funit].rd = instr.i.rd + 32;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.i.offset;
+    next->funit_state[funit].rt_r = TRUE;
+    break;
+
+  case S_D:
+    next->funit_state[funit].rd = instr.i.offset;
+    next->funit_state[funit].rs = instr.i.rs;
+    next->funit_state[funit].rs_r = FALSE;
+    next->funit_state[funit].rt = instr.i.rd + 32;
+    next->funit_state[funit].rt_r = FALSE;
+    break;
   }
 }
 
@@ -188,6 +287,45 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
     if(next->funit_state[i].time > 0) continue;
     
     switch(current->funit_state[i].op){
+    case SYSCALL:
+      switch(current->funit_state[i].rd){
+      case 1:
+        printf("%d\n",current->funit_state[i].rs);
+        break;
+      case 4:
+        fputs((char*)mem_translate_addr(current->funit_state[i].rs), stdout);
+        break;
+      case 8:
+        fgets((char*)mem_translate_addr(current->funit_state[i].rs), current->funit_state[i].rt, stdin);
+        break;
+      case 10:
+        next->running = 0;
+        break;
+      }
+      break;
+
+    case B:
+      next->pc += current->funit_state[i].rd<<2;
+      break;
+
+    case BEQZ:
+      if(current->funit_state[i].rs == 0){
+	next->pc += current->funit_state[i].rd<<2;
+      }
+      break;
+
+    case BNE:
+      if(current->funit_state[i].rs != current->funit_state[i].rt){
+	next->pc += current->funit_state[i].rd<<2;
+      }
+      break;
+
+    case BGE:
+      if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
+	next->pc += current->funit_state[i].rd<<2;
+      }
+      break;
+
     case ADD:
     case ADDI:
       next->funit_state[i].rd = current->funit_state[i].rs + current->funit_state[i].rt;
@@ -209,6 +347,26 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
     case LI:
       next->funit_state[i].rd = current->funit_state[i].rt;
       break;
+
+    case L_D:
+      next->funit_state[i].rd = mem_read32(current->funit_state[i].rs + current->funit_state[i].rt);
+      break;
+
+    case S_D:
+      mem_write32(current->funit_state[i].rs + current->funit_state[i].rd, current->funit_state[i].rt);
+      break;
+
+    case FADD:
+      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) + FLOAT(current->funit_state[i].rt);
+      break;
+
+    case FSUB:
+      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) - FLOAT(current->funit_state[i].rt);
+      break;
+
+    case FMUL:
+      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) * FLOAT(current->funit_state[i].rt);
+      break;
     }
   }
 }
@@ -219,11 +377,12 @@ void exec_write(struct exec_state_t* current, struct exec_state_t* next){
     if(current->funit_state[i].time == 0){
       //Replace this with something not stupid (we need more data in funit_state?)
       for(rd=0;rd<64;rd++) if(current->reg_status[rd] == i) break;
-      assert(rd < 64);
       
       next->funit_state[i].op = NOP;
-      next->reg[rd] = current->funit_state[i].rd;
-      next->reg_status[rd] = U_NONE;
+      if(rd < 64){
+	next->reg[rd] = current->funit_state[i].rd;
+	next->reg_status[rd] = U_NONE;
+      }
     }
   }
 }
