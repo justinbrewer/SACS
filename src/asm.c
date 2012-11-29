@@ -443,7 +443,7 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
   }
 
   else {
-    printf("Error: Unknown argument \"%s\"\n",operator);
+    printf("Error: Unknown operator \"%s\"\n",operator);
     exit(EXIT_FAILURE);
   }
 
