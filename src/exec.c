@@ -313,24 +313,24 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
       break;
 
     case B:
-      next->pc += current->funit_state[i].rd<<2;
+      next->pc = current->pc + current->funit_state[i].rd<<2;
       break;
 
     case BEQZ:
       if(current->funit_state[i].rs == 0){
-	next->pc += current->funit_state[i].rd<<2;
+        next->pc = current->pc + current->funit_state[i].rd<<2;
       }
       break;
 
     case BNE:
       if(current->funit_state[i].rs != current->funit_state[i].rt){
-	next->pc += current->funit_state[i].rd<<2;
+        next->pc = current->pc + current->funit_state[i].rd<<2;
       }
       break;
 
     case BGE:
       if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
-	next->pc += current->funit_state[i].rd<<2;
+        next->pc = current->pc + current->funit_state[i].rd<<2;
       }
       break;
 
