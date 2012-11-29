@@ -146,7 +146,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   if(current->funit_state[funit].op == NOP && (rd == 0 || current->reg_status[rd] == U_NONE)){
     next->funit_state[funit].time = current->funit_state[funit].cycles;
     next->funit_state[funit].op = instr.j.op;
-    next->reg_status[rd] = funit;
+    if(rd) next->reg_status[rd] = funit;
   } else {
     next->pc = current->pc;
     return;
