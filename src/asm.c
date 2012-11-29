@@ -288,7 +288,7 @@ void asm_free_binary(struct asm_binary* bin){
   for(_k=0;_k<_len;_k++){			\
     if(argv[i][_k] == '('){			\
       argv[i][_k] = 0;				\
-      reg = (&argv[i][_k])+1;			\
+      _reg = (&argv[i][_k])+1;			\
       continue;					\
     }						\
     if(argv[i][_k] == ')'){			\
@@ -296,7 +296,7 @@ void asm_free_binary(struct asm_binary* bin){
       break;					\
     }						\
   }						\
-  strcpy(argv[j],reg);				\
+  strcpy(argv[j],_reg);				\
 
 #define REGISTER_ARG(i)						\
   instr->argv[i].type = VALUE;					\
@@ -311,7 +311,7 @@ void asm_free_binary(struct asm_binary* bin){
   instr->argv[i].value = atoi(argv[i]);
 
 #define FLOATREG_ARG(i)					\
-  intsr->argv[i].type = VALUE;				\
+  instr->argv[i].type = VALUE;				\
   instr->argv[i].value = _translate_fpr_name(argv[i]);
 
 struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MAX_TOKEN_LEN]){
