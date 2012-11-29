@@ -338,7 +338,6 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
     LABEL_ARG(1);
   }
 
-  //LB requires special processing, since one arg is passed as imm(reg)
   else if(strcmp(operator,"lb") == 0){
     instr->opcode = LB;
     instr->argc = 3;
