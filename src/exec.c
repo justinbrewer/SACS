@@ -139,7 +139,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
   }
 
-  if(current->funit_state[funit].op == NOP && current->reg_status[rd] == U_NONE){
+  if(current->funit_state[funit].op == NOP && (rd == 0 || current->reg_status[rd] == U_NONE)){
     next->funit_state[funit].time = current->funit_state[funit].cycles;
     next->funit_state[funit].op = instr.j.op;
     next->reg_status[rd] = funit;
@@ -379,7 +379,7 @@ void exec_write(struct exec_state_t* current, struct exec_state_t* next){
       for(rd=0;rd<64;rd++) if(current->reg_status[rd] == i) break;
       
       next->funit_state[i].op = NOP;
-      if(rd < 64){
+      if(rd > 0 && rd < 64){
 	next->reg[rd] = current->funit_state[i].rd;
 	next->reg_status[rd] = U_NONE;
       }
