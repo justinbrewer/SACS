@@ -344,7 +344,7 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
 	break;
 
       case BGE:
-	if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
+	if((int32_t)current->funit_state[i].rt >= (int32_t)current->funit_state[i].rs){
 	  next->pc = current->pc + (current->funit_state[i].rd<<2);
 	}
 	next->stall = FALSE;
