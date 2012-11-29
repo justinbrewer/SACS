@@ -374,7 +374,7 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
 void exec_write(struct exec_state_t* current, struct exec_state_t* next){
   int i, rd;
   for(i=0;i<NUM_UNITS;i++){
-    if(current->funit_state[i].time == 0){
+    if(current->funit_state[i].time == 0 && current->funit_state[i].op != NOP){
       //Replace this with something not stupid (we need more data in funit_state?)
       for(rd=0;rd<64;rd++) if(current->reg_status[rd] == i) break;
       
