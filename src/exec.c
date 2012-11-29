@@ -34,6 +34,7 @@ struct exec_state_t {
   uint32_t data;
 
   int running;
+  bool stall;
 
   uint32_t reg[64];
 
@@ -85,6 +86,8 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   int rd;
   exec_funit_t funit;
   union gpr_instr_t instr;
+
+  if(current->stall == TRUE) return;
 
   instr.u = mem_read32(current->pc);
   next->pc = current->pc + 4;
@@ -167,6 +170,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case B:
+    next->stall = TRUE;
     next->funit_state[funit].rd = instr.j.offset;
     next->funit_state[funit].rs = 0;
     next->funit_state[funit].rs_r = TRUE;
@@ -175,6 +179,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case BEQZ:
+    next->stall = TRUE;
     next->funit_state[funit].rd = instr.i.offset;
     next->funit_state[funit].rs = instr.i.rs;
     next->funit_state[funit].rs_r = FALSE;
@@ -183,6 +188,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case BGE:
+    next->stall = TRUE;
     next->funit_state[funit].rd = instr.i.offset;
     next->funit_state[funit].rs = instr.i.rs;
     next->funit_state[funit].rs_r = FALSE;
@@ -191,6 +197,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case BNE:
+    next->stall = TRUE;
     next->funit_state[funit].rd = instr.i.offset;
     next->funit_state[funit].rs = instr.i.rs;
     next->funit_state[funit].rs_r = FALSE;
@@ -314,24 +321,28 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
 
     case B:
       next->pc = current->pc + (current->funit_state[i].rd<<2);
+      next->stall = FALSE;
       break;
 
     case BEQZ:
       if(current->funit_state[i].rs == 0){
         next->pc = current->pc + (current->funit_state[i].rd<<2);
       }
+      next->stall = FALSE;
       break;
 
     case BNE:
       if(current->funit_state[i].rs != current->funit_state[i].rt){
         next->pc = current->pc + (current->funit_state[i].rd<<2);
       }
+      next->stall = FALSE;
       break;
 
     case BGE:
       if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
         next->pc = current->pc + (current->funit_state[i].rd<<2);
       }
+      next->stall = FALSE;
       break;
 
     case ADD:
