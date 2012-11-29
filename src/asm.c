@@ -282,6 +282,22 @@ void asm_free_binary(struct asm_binary* bin){
     exit(EXIT_FAILURE);							\
   }
 
+#define SPLIT_IMMREG(i,j)			\
+  int _k, _len = strlen(argv[i]);		\
+  char* _reg;					\
+  for(_k=0;_k<_len;_k++){			\
+    if(argv[i][_k] == '('){			\
+      argv[i][_k] = 0;				\
+      reg = (&argv[i][_k])+1;			\
+      continue;					\
+    }						\
+    if(argv[i][_k] == ')'){			\
+      argv[i][_k] = 0;				\
+      break;					\
+    }						\
+  }						\
+  strcpy(argv[j],reg);				\
+
 #define REGISTER_ARG(i)						\
   instr->argv[i].type = VALUE;					\
   instr->argv[i].value = _translate_reg_name(argv[i]);
@@ -333,21 +349,7 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
       exit(EXIT_FAILURE);
     }
 
-    //Split "imm(reg)" into "imm" "reg"
-    int i, len = strlen(argv[1]);
-    char* reg;
-    for(i=0;i<len;i++){
-      if(argv[1][i] == '('){
-	argv[1][i] = 0;
-	reg = (&argv[1][i])+1;
-	continue;
-      }
-      if(argv[1][i] == ')'){
-	argv[1][i] = 0;
-	break;
-      }
-    }
-    strcpy(argv[2],reg);
+    SPLIT_IMMREG(1,2);
 
     REGISTER_ARG(0);
     IMM_ARG(1);
