@@ -74,6 +74,8 @@ struct exec_stats_t* exec_run(uint32_t start, uint32_t text, uint32_t data){
     exec_units(&current,&next);
     exec_write(&current,&next);
 
+    next.stats.c++;
+
     memcpy(&current,&next,sizeof(struct exec_state_t));
   }
 
@@ -91,6 +93,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
 
   instr.u = mem_read32(current->pc);
   next->pc = current->pc + 4;
+  next->stats.ic++;
 
   switch(instr.j.op){
   case NOP:
