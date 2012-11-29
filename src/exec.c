@@ -165,6 +165,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
       next->pc = current->pc;
       return;
     }
+    next->stall = TRUE;
     next->funit_state[funit].rd = current->reg[2];
     next->funit_state[funit].rs = current->reg[4];
     next->funit_state[funit].rs_r = TRUE;
@@ -322,6 +323,7 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
 	  next->running = 0;
 	  break;
 	}
+	next->stall = FALSE;
 	break;
 
       case B:
