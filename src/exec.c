@@ -117,9 +117,13 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     break;
 
   case LB:
-  case L_D:
     funit = U_MEM;
     rd = instr.i.rd;
+    break;
+
+  case L_D:
+    funit = U_MEM;
+    rd = instr.i.rd + 32;
     break;
 
   case S_D:
