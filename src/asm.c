@@ -364,6 +364,40 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
     IMM_ARG(1);
   }
 
+  else if(strcmp(operator,"l.d") == 0){
+    instr->opcode = L_D;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    SPLIT_IMMREG(1,2);
+
+    FLOATREG_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
+  }
+
+  else if(strcmp(operator,"s.d") == 0){
+    instr->opcode = S_D;
+    instr->argc = 3;
+
+    if(argc != 2){
+      printf("Error: %s takes %d arguments, got %d\n",
+	     operator,2,argc);
+      exit(EXIT_FAILURE);
+    }
+
+    SPLIT_IMMREG(1,2);
+
+    FLOATREG_ARG(0);
+    IMM_ARG(1);
+    REGISTER_ARG(2);
+  }
+
   else if(strcmp(operator,"b") == 0){
     instr->opcode = B;
     instr->argc = 1;
@@ -441,6 +475,36 @@ struct asm_instr* _decode_instr(char* operator, int argc, char argv[MAX_ARGC][MA
     IMM_ARG(2);
   }
 
+  else if(strcmp(operator,"fadd") == 0){
+    instr->opcode = FADD;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
+  else if(strcmp(operator,"fsub") == 0){
+    instr->opcode = FSUB;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
+  else if(strcmp(operator,"fmul") == 0){
+    instr->opcode = FMUL;
+    instr->argc = 3;
+    CHECK_ARGC;
+
+    FLOATREG_ARG(0);
+    FLOATREG_ARG(1);
+    FLOATREG_ARG(2);
+  }
+
   else {
     printf("Error: Unknown operator \"%s\"\n",operator);
     exit(EXIT_FAILURE);
@@ -461,6 +525,9 @@ uint32_t _collapse_instr(struct asm_instr* instr){
 
   case ADD:
   case SUB:
+  case FADD:
+  case FSUB:
+  case FMUL:
     res.r.op = instr->opcode;
     res.r.rs = instr->argv[1].value;
     res.r.rt = instr->argv[2].value;
@@ -498,6 +565,8 @@ uint32_t _collapse_instr(struct asm_instr* instr){
     break;
 
   case LB:
+  case L_D:
+  case S_D:
     res.i.op = instr->opcode;
     res.i.rs = instr->argv[2].value;
     res.i.rd = instr->argv[0].value;
