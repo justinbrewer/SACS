@@ -304,90 +304,106 @@ void exec_units(struct exec_state_t* current, struct exec_state_t* next){
     next->funit_state[i].time = current->funit_state[i].time - 1;
     if(next->funit_state[i].time > 0) continue;
     
-    switch(current->funit_state[i].op){
-    case SYSCALL:
-      switch(current->funit_state[i].rd){
-      case 1:
-        printf("%d\n",current->funit_state[i].rs);
-        break;
-      case 4:
-        fputs((char*)mem_translate_addr(current->funit_state[i].rs), stdout);
-        break;
-      case 8:
-        fgets((char*)mem_translate_addr(current->funit_state[i].rs), current->funit_state[i].rt, stdin);
-        break;
-      case 10:
-        next->running = 0;
-        break;
+    switch(i){
+    case U_INT:
+      switch(current->funit_state[i].op){
+      case SYSCALL:
+	switch(current->funit_state[i].rd){
+	case 1:
+	  printf("%d\n",current->funit_state[i].rs);
+	  break;
+	case 4:
+	  fputs((char*)mem_translate_addr(current->funit_state[i].rs), stdout);
+	  break;
+	case 8:
+	  fgets((char*)mem_translate_addr(current->funit_state[i].rs), current->funit_state[i].rt, stdin);
+	  break;
+	case 10:
+	  next->running = 0;
+	  break;
+	}
+	break;
+
+      case B:
+	next->pc = current->pc + (current->funit_state[i].rd<<2);
+	next->stall = FALSE;
+	break;
+
+      case BEQZ:
+	if(current->funit_state[i].rs == 0){
+	  next->pc = current->pc + (current->funit_state[i].rd<<2);
+	}
+	next->stall = FALSE;
+	break;
+
+      case BNE:
+	if(current->funit_state[i].rs != current->funit_state[i].rt){
+	  next->pc = current->pc + (current->funit_state[i].rd<<2);
+	}
+	next->stall = FALSE;
+	break;
+
+      case BGE:
+	if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
+	  next->pc = current->pc + (current->funit_state[i].rd<<2);
+	}
+	next->stall = FALSE;
+	break;
+
+      case ADD:
+      case ADDI:
+	next->funit_state[i].rd = current->funit_state[i].rs + current->funit_state[i].rt;
+	break;
+
+      case SUB:
+      case SUBI:
+	next->funit_state[i].rd = current->funit_state[i].rs - current->funit_state[i].rt;
+	break;
+
+      case LA:
+	next->funit_state[i].rd = current->data + current->funit_state[i].rt;
+	break;
+
+      case LI:
+	next->funit_state[i].rd = current->funit_state[i].rt;
+	break;
       }
       break;
 
-    case B:
-      next->pc = current->pc + (current->funit_state[i].rd<<2);
-      next->stall = FALSE;
-      break;
+    case U_FPADD:
+      switch(current->funit_state[i].op){
+      case FADD:
+	FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) + FLOAT(current->funit_state[i].rt);
+	break;
 
-    case BEQZ:
-      if(current->funit_state[i].rs == 0){
-        next->pc = current->pc + (current->funit_state[i].rd<<2);
+      case FSUB:
+	FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) - FLOAT(current->funit_state[i].rt);
+	break;
       }
-      next->stall = FALSE;
       break;
 
-    case BNE:
-      if(current->funit_state[i].rs != current->funit_state[i].rt){
-        next->pc = current->pc + (current->funit_state[i].rd<<2);
+    case U_FPMUL:
+      switch(current->funit_state[i].op){
+      case FMUL:
+	FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) * FLOAT(current->funit_state[i].rt);
+	break;
       }
-      next->stall = FALSE;
       break;
 
-    case BGE:
-      if((int32_t)current->funit_state[i].rs >= (int32_t)current->funit_state[i].rt){
-        next->pc = current->pc + (current->funit_state[i].rd<<2);
+    case U_MEM:
+      switch(current->funit_state[i].op){
+      case LB:
+	next->funit_state[i].rd = mem_read8(current->funit_state[i].rs + current->funit_state[i].rt);
+	break;
+
+      case L_D:
+	next->funit_state[i].rd = mem_read32(current->funit_state[i].rs + current->funit_state[i].rt);
+	break;
+
+      case S_D:
+	mem_write32(current->funit_state[i].rs + current->funit_state[i].rd, current->funit_state[i].rt);
+	break;
       }
-      next->stall = FALSE;
-      break;
-
-    case ADD:
-    case ADDI:
-      next->funit_state[i].rd = current->funit_state[i].rs + current->funit_state[i].rt;
-      break;
-
-    case SUB:
-    case SUBI:
-      next->funit_state[i].rd = current->funit_state[i].rs - current->funit_state[i].rt;
-      break;
-
-    case LA:
-      next->funit_state[i].rd = current->data + current->funit_state[i].rt;
-      break;
-
-    case LB:
-      next->funit_state[i].rd = mem_read8(current->funit_state[i].rs + current->funit_state[i].rt);
-      break;
-
-    case LI:
-      next->funit_state[i].rd = current->funit_state[i].rt;
-      break;
-
-    case L_D:
-      next->funit_state[i].rd = mem_read32(current->funit_state[i].rs + current->funit_state[i].rt);
-      break;
-
-    case S_D:
-      mem_write32(current->funit_state[i].rs + current->funit_state[i].rd, current->funit_state[i].rt);
-      break;
-
-    case FADD:
-      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) + FLOAT(current->funit_state[i].rt);
-      break;
-
-    case FSUB:
-      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) - FLOAT(current->funit_state[i].rt);
-      break;
-
-    case FMUL:
-      FLOAT(next->funit_state[i].rd) = FLOAT(current->funit_state[i].rs) * FLOAT(current->funit_state[i].rt);
       break;
     }
   }
