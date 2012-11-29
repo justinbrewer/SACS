@@ -266,14 +266,16 @@ void exec_read(struct exec_state_t* current, struct exec_state_t* next){
   for(i=0;i<NUM_UNITS;i++){
     if(current->funit_state[i].op != NOP){
       if(current->funit_state[i].rs_r == FALSE){
-	if(current->reg_status[current->funit_state[i].rs] == U_NONE){
+	if(current->reg_status[current->funit_state[i].rs] == U_NONE
+	   || current->reg_status[current->funit_state[i].rs] == i){
 	  next->funit_state[i].rs = current->reg[current->funit_state[i].rs];
 	  next->funit_state[i].rs_r = TRUE;
 	}
       }
       
       if(current->funit_state[i].rt_r == FALSE){
-	if(current->reg_status[current->funit_state[i].rt] == U_NONE){
+	if(current->reg_status[current->funit_state[i].rt] == U_NONE
+	   || current->reg_status[current->funit_state[i].rs] == i){
 	  next->funit_state[i].rt = current->reg[current->funit_state[i].rt];
 	  next->funit_state[i].rt_r = TRUE;
 	}
