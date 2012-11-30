@@ -16,9 +16,10 @@ init:
 
 sacs: $(SACSOBJ)
 	$(LL) $(LFLAGS) -o $(BUILDDIR)/sacs $(SACSOBJ)
+	mv $(BUILDDIR)/sacs scoSim
 
 clean:
-	rm -rf $(OBJDIR) $(BUILDDIR)
+	rm -rf $(OBJDIR) $(BUILDDIR) scoSim
 
 $(OBJDIR)/main.o: src/asm.h src/mem.h src/exec.h src/main.c
 	$(CC) $(CFLAGS) -o $(OBJDIR)/main.o src/main.c
