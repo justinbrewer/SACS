@@ -89,7 +89,10 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
   exec_funit_t funit;
   union gpr_instr_t instr;
 
-  if(current->stall == TRUE) return;
+  if(current->stall == TRUE){
+    next->stats.nopc++;
+    return;
+  }
 
   instr.u = mem_read32(current->pc);
   next->pc = current->pc + 4;
@@ -97,6 +100,7 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
 
   switch(instr.j.op){
   case NOP:
+    next->stats.nopc++;
     return;
 
   case SYSCALL:
@@ -155,6 +159,8 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     if(rd) next->reg_status[rd] = funit;
   } else {
     next->pc = current->pc;
+    next->stats.ic--;
+    next->stats.nopc++;
     return;
   }
 
@@ -163,6 +169,8 @@ void exec_issue(struct exec_state_t* current, struct exec_state_t* next){
     if(current->reg_status[2] != U_NONE || current->reg_status[4] != U_NONE
        || current->reg_status[5] != U_NONE){
       next->pc = current->pc;
+      next->stats.ic--;
+      next->stats.nopc++;
       return;
     }
     next->stall = TRUE;
