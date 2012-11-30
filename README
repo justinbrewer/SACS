@@ -1,0 +1,36 @@
+=====================
+How to Use
+
+To build:
+
+   make
+
+To run:
+
+   ./scoSim <source-file>
+
+
+=====================
+How It Works
+
+The execution module works pretty much like the scoreboard system discussed in
+class. The data structure is a bit slimmer though, as I found instruction
+status, the fetch buffer and the producer fields in the unit status table
+unnecessary.
+
+=====================
+Difficulties
+
+Updating the assembler was fairly straightforward. However, since I am using
+binary encoding, it was impossible to have floating-point instructions with
+immediate values. This would have required parsing them as pseudo-instructions
+which my assembler is not capable of doing. For example, fli would have to be
+split into two instructions (lui, ori), but the way my assembler is built, all
+instructions must have a 1-to-1 mapping. My solution was to have tho floats
+stored in the data segment and load them using l.d.
+
+The execution module was surprisingly easy to implement. Since there was no
+forwarding, there was no difficulty in figuring out the logic. Everything
+worked after spending only an hour or two with gdb.
+
+====================
