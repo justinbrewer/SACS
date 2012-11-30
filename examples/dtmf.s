@@ -21,9 +21,7 @@ main:
 
 loop:	subi $t0, $t0, 1
 	beqz $t0, exit
-	nop
-	nop
-
+	
 	fmul $f3, $f1, $f4
 	fsub $f3, $f3, $f5
 
@@ -40,8 +38,6 @@ loop:	subi $t0, $t0, 1
 	s.d $f6, 0($t3)
 
 	b loop
-	nop
-	nop
 	
 exit:	li $v0, 10
 	syscall
